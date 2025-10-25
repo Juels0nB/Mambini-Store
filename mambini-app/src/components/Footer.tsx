@@ -1,6 +1,6 @@
 function Footer() {
     return (
-        <footer className="bg-blue-950 text-white px-8 py-10 mt-auto">
+        <footer className="bg-gray-900 text-white px-8 py-10 mt-auto">
             {/* Container flex principal */}
             <div className="flex flex-col items-center text-center gap-y-8 md:flex-row md:justify-between md:items-start md:text-left">
 
@@ -37,13 +37,13 @@ function Footer() {
                 <div>
                     <h1 className="font-semibold text-lg mb-2">Stay Updated</h1>
                     <p className="text-gray-400 mb-2">Subscribe to our newsletter</p>
-                    <div className="flex gap-2 background-slate-100">
+                    <div className="flex gap-2 background-slate-100 bg-white rounded-lg" >
                         <input
                             type="email"
-                            placeholder="Enter your email"
-                            className="rounded-l-lg py-2 text-slate-500  "
+                            placeholder="Your email"
+                            className="rounded-l-lg py-4 px-4 text-slate-500  "
                         />
-                        <button className="bg-white text-blue-950 font-semibold rounded-r-lg px-20 py-2 hover:bg-gray-200 transition">
+                        <button className="bg-gray-800 border-gray-800 font-semibold rounded-r-lg px-20 py-2 hover:bg-gray-200 transition">
                             Join
                         </button>
                     </div>
