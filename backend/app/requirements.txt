@@ -1,0 +1,6 @@
+fastapi
+uvicorn
+mongoengine
+pydantic[email]
+python-jose[cryptography]
+passlib[argon2]
