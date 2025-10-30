@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import NavBar from "../components/NavBar";
 import Footer from "../components/Footer";
-//import { AiOutlineHeart } from "react-icons/ai";
+//import { AiOutlineHeart } from "react-icons/ai"; - na M2
 import feat1 from '../assets/feat-1.jpg';
 
 
@@ -15,9 +15,9 @@ interface Product {
     rating?: number;
     reviews?: number;
     description?: string;
-    colors?: string[]; // hex ou nomes
-    sizes?: string[]; // S, M, L...
-    images?: string[]; // URLs ou imports
+    colors?: string[];
+    sizes?: string[];
+    images?: string[];
     category?: string;
 }
 
@@ -28,7 +28,7 @@ interface DetailProps {
 export default function Detail({ onAddToCart }: DetailProps) {
     const { id } = useParams<{ id: string }>();
 
-    // Estado do produto (no exemplo usamos mock)
+    // Estado do produto (mock)
     const [product, setProduct] = useState<Product | null>(null);
     const [selectedColor, setSelectedColor] = useState<string | undefined>(undefined);
     const [selectedSize, setSelectedSize] = useState<string | undefined>(undefined);

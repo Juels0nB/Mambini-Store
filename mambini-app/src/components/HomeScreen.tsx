@@ -44,8 +44,8 @@ export default function HomeScreen() {
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
                     {[feat1, feat2, feat3, feat4].map((img, i) => (
                         <div key={i} className="bg-white rounded-lg shadow hover:shadow-lg transition overflow-hidden">
-                            <img src={img} alt="Product" className="w-full h-64 object-cover" />
-                            <div className="p-4">
+                            <img onClick={() =>navigate("/detail")} src={img} alt="Product" className="w-full h-64 object-cover" />
+                            <div onClick={() =>navigate("/detail")} className="p-4">
                                 <h3 className="font-semibold text-gray-800">Product {i + 1}</h3>
                                 <p className="text-gray-500 text-sm">29.99€</p>
                             </div>
@@ -65,8 +65,8 @@ export default function HomeScreen() {
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
                     {[new1, new2, new3, new4].map((img, i) => (
                         <div key={i} className="bg-white rounded-lg shadow hover:shadow-lg transition overflow-hidden">
-                            <img src={img} alt="Product" className="w-full h-64 object-cover" />
-                            <div className="p-4">
+                            <img onClick={() =>navigate("/detail")} src={img} alt="Product" className="w-full h-64 object-cover" />
+                            <div onClick={() =>navigate("/detail")} className="p-4">
                                 <h3 className="font-semibold text-gray-800">Arrival {i + 1}</h3>
                                 <p className="text-gray-500 text-sm">39.99€</p>
                             </div>
