@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends
 from fastapi import HTTPException, status
 from app.models.user import User
 from app.schemas.user import UserCreate, UserOut, UserLogin, Token
-from app.auth import create_access_token
+from app.auth import create_access_token, get_current_user
 
 router = APIRouter(prefix="/users")
 
@@ -32,3 +32,12 @@ def login(user: UserLogin):
     
     token = create_access_token({"user_id": str(db_user.id), "role": db_user.role})
     return Token(access_token=token)
+
+@router.get("/me", response_model=UserOut)
+def read_users_me(current_user: User = Depends(get_current_user)):
+    """Retorna o usuário logado com base no token JWT"""
+    return UserOut(
+        email=current_user.email,
+        name=current_user.name,
+        role=current_user.role
+    )
