@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { AiOutlineMenu, AiOutlineClose, AiOutlineSearch, AiOutlineShoppingCart, AiOutlineUser } from "react-icons/ai";
+import { Link } from "react-router-dom";
 
 function NavBar() {
     const [nav, setNav] = useState(false);
@@ -35,10 +36,12 @@ function NavBar() {
                     {/* CART + USER ICONS */}
                     <div className="flex items-center gap-5">
                         <div className="relative cursor-pointer">
+                            <Link to="/cart" className="relative cursor-pointer">
                             <AiOutlineShoppingCart size={22} />
                             <span className="absolute -top-2 -right-2 bg-red-600 text-white text-xs font-semibold rounded-full px-1.5">
                 1
               </span>
+                            </Link>
                         </div>
                         <AiOutlineUser size={22} className="cursor-pointer" />
                     </div>
@@ -72,10 +75,13 @@ function NavBar() {
                             className="bg-transparent outline-none text-sm placeholder-gray-500"
                         />
                     </li>
-                    <li className="flex items-center gap-3">
+                    <li className="flex items-center gap-3"  >
+                        <Link to="/cart">
                         <AiOutlineShoppingCart size={22} />
+                        </Link>
                         <AiOutlineUser size={22} />
                     </li>
+
                 </ul>
             </div>
         </header>

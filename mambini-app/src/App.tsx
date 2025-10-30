@@ -4,6 +4,8 @@ import NavBar from "./components/NavBar.tsx";
 import Footer from "./components/Footer.tsx";
 import HomeScreen from "./components/HomeScreen.tsx";
 import ProductsPage from "./components/ProductsScreen.tsx";
+import Cart from "./components/Cart.tsx";
+import Detail from "./components/Detail.tsx";
 
 function App() {
     return (
@@ -13,7 +15,9 @@ function App() {
                 <main className="pt-10">
                 <Routes>
                     <Route path="/" element={<HomeScreen />} />
-                    <Route path="/products" element={<ProductsPage />} /> {/* 👈 Aqui */}
+                    <Route path="/products" element={<ProductsPage />} />
+                    <Route path="/cart" element={<Cart />} />
+                    <Route path="/product/:id" element={<Detail />} />
 
                 </Routes>
                 </main>

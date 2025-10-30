@@ -47,7 +47,7 @@ export default function HomeScreen() {
                             <img src={img} alt="Product" className="w-full h-64 object-cover" />
                             <div className="p-4">
                                 <h3 className="font-semibold text-gray-800">Product {i + 1}</h3>
-                                <p className="text-gray-500 text-sm">$29.99</p>
+                                <p className="text-gray-500 text-sm">29.99€</p>
                             </div>
                         </div>
                     ))}
@@ -68,7 +68,7 @@ export default function HomeScreen() {
                             <img src={img} alt="Product" className="w-full h-64 object-cover" />
                             <div className="p-4">
                                 <h3 className="font-semibold text-gray-800">Arrival {i + 1}</h3>
-                                <p className="text-gray-500 text-sm">$39.99</p>
+                                <p className="text-gray-500 text-sm">39.99€</p>
                             </div>
                         </div>
                     ))}
