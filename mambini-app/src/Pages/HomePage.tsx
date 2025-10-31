@@ -37,7 +37,7 @@ export default function HomePage() {
             <section className="py-16 px-6 md:px-20">
                 <div className="flex justify-between items-center mb-8">
                     <h2 className="text-2xl font-bold">Featured Products</h2>
-                    <button className="border border-gray-800 px-4 py-2 rounded-md hover:bg-gray-100 transition">
+                    <button onClick={() => navigate("/products")} className="border border-gray-800 px-4 py-2 rounded-md hover:bg-gray-100 transition">
                         View All Products
                     </button>
                 </div>
@@ -58,7 +58,7 @@ export default function HomePage() {
             <section className="py-16 px-6 md:px-20 bg-gray-50">
                 <div className="flex justify-between items-center mb-8">
                     <h2 className="text-2xl font-bold">New Arrivals</h2>
-                    <button className="border border-gray-800 px-4 py-2 rounded-md hover:bg-gray-100 transition">
+                    <button onClick={() => navigate("/products")} className="border border-gray-800 px-4 py-2 rounded-md hover:bg-gray-100 transition">
                         View More Arrivals
                     </button>
                 </div>
