@@ -14,7 +14,7 @@ const products = [
         price: 35.99,
         image:
             "https://encrypted-tbn1.gstatic.com/shopping?q=tbn:ANd9GcR-_TgYOkNeTxOp7kdpn8zgdAPli07ZRhWbfiYlBUFgE-nFtIdUxei_x5p3QYfvqOFQ4lgZNVn-h9sdWrb-hSNY8XCa69b5Q-Ppsn8i-nM-wmuSL0o8a-JH",
-        badge: "10% OFF",
+
     },
     {
         id: 3,
