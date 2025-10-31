@@ -9,7 +9,7 @@ import new3 from '../assets/new-3.jpg';
 import new4 from '../assets/new-4.jpg';
 import { useNavigate } from "react-router-dom";
 
-export default function HomeScreen() {
+export default function HomePage() {
     const navigate = useNavigate();
     return (
 

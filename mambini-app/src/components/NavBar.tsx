@@ -1,26 +1,30 @@
 import { useState } from "react";
-import { AiOutlineMenu, AiOutlineClose, AiOutlineSearch, AiOutlineShoppingCart, AiOutlineUser } from "react-icons/ai";
+import {
+    AiOutlineMenu,
+    AiOutlineClose,
+    AiOutlineSearch,
+    AiOutlineShoppingCart,
+    AiOutlineUser,
+} from "react-icons/ai";
 import { Link } from "react-router-dom";
 
 function NavBar() {
     const [nav, setNav] = useState(false);
-
     const handleNav = () => setNav(!nav);
 
     return (
         <header className="fixed top-0 left-0 w-full bg-white shadow-sm z-50">
             <nav className="flex justify-between items-center max-w-[1240px] mx-auto px-6 py-3 text-gray-800">
-
                 {/* LOGO */}
                 <h1 className="text-xl font-bold tracking-wide">MAMBINI STORE</h1>
 
                 {/* LINKS DESKTOP */}
                 <ul className="hidden md:flex items-center gap-6 text-sm font-medium">
                     <li className="hover:text-black text-gray-600 cursor-pointer">
-                        <a href="/">Home </a>
+                        <a href="/">Home</a>
                     </li>
                     <li className="hover:text-black text-gray-600 cursor-pointer">
-                        <a href="/products">Shop </a>
+                        <a href="/products">Shop</a>
                     </li>
 
                     {/* SEARCH BAR */}
@@ -35,15 +39,17 @@ function NavBar() {
 
                     {/* CART + USER ICONS */}
                     <div className="flex items-center gap-5">
-                        <div className="relative cursor-pointer">
-                            <Link to="/cart" className="relative cursor-pointer">
+                        <Link to="/cart" className="relative cursor-pointer">
                             <AiOutlineShoppingCart size={22} />
                             <span className="absolute -top-2 -right-2 bg-red-600 text-white text-xs font-semibold rounded-full px-1.5">
                 1
               </span>
-                            </Link>
-                        </div>
-                        <AiOutlineUser size={22} className="cursor-pointer" />
+                        </Link>
+
+                        {/* ✅ agora o perfil está ligado */}
+                        <Link to="/profile">
+                            <AiOutlineUser size={22} className="cursor-pointer" />
+                        </Link>
                     </div>
                 </ul>
 
@@ -59,13 +65,15 @@ function NavBar() {
                     nav ? "translate-x-0" : "-translate-x-full"
                 }`}
             >
-                <h1 className="text-xl font-bold p-6 border-b border-gray-200">MAMBINI STORE</h1>
+                <h1 className="text-xl font-bold p-6 border-b border-gray-200">
+                    MAMBINI STORE
+                </h1>
                 <ul className="p-6 space-y-4 text-gray-700 font-medium">
                     <li onClick={handleNav} className="border-b pb-2">
-                        <a href="/">Home </a>
+                        <a href="/">Home</a>
                     </li>
                     <li className="border-b pb-2">
-                        <a href="/products">Shop </a>
+                        <a href="/products">Shop</a>
                     </li>
                     <li className="flex items-center gap-2 border-b pb-2">
                         <AiOutlineSearch size={18} />
@@ -75,13 +83,14 @@ function NavBar() {
                             className="bg-transparent outline-none text-sm placeholder-gray-500"
                         />
                     </li>
-                    <li className="flex items-center gap-3"  >
+                    <li className="flex items-center gap-3">
                         <Link to="/cart">
-                        <AiOutlineShoppingCart size={22} />
+                            <AiOutlineShoppingCart size={22} />
                         </Link>
-                        <AiOutlineUser size={22} />
+                        <Link to="/profile">
+                            <AiOutlineUser size={22} />
+                        </Link>
                     </li>
-
                 </ul>
             </div>
         </header>

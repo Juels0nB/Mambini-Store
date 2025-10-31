@@ -2,7 +2,7 @@ import feat1 from '../assets/feat-1.jpg';
 import feat2 from '../assets/feat-2.jpg';
 import { useState } from "react";
 
-function Cart() {
+function CartPage() {
     // Estado com produtos do carrinho
     const [itens, setItens] = useState([
         {
@@ -109,4 +109,4 @@ function Cart() {
     );
 }
 
-export default Cart;
+export default CartPage;

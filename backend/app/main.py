@@ -1,11 +1,27 @@
 from fastapi import FastAPI
-from app.routes import user, product
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
+from app.routes import user, product
+
 import app.db  # importa a conexão MongoDB
 import os
 
 
 app = FastAPI(title="Backend MongoEngine + FastAPI")
+
+#  Permitir conexões com o frontend (Vite: localhost:5173)
+origins = [
+    "http://localhost:5173",
+    "http://127.0.0.1:5173"
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,  # Domínios permitidos
+    allow_credentials=True,
+    allow_methods=["*"],    # Permite todos os métodos (GET, POST, etc)
+    allow_headers=["*"],    # Permite todos os headers (incluindo Authorization)
+)
 
 app.include_router(user.router)
 app.include_router(product.router)

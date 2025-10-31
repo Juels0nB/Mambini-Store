@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
-import NavBar from "../components/NavBar";
-import Footer from "../components/Footer";
+import NavBar from "../components/NavBar.tsx";
+import Footer from "../components/Footer.tsx";
 //import { AiOutlineHeart } from "react-icons/ai"; - na M2
 import feat1 from '../assets/feat-1.jpg';
 
@@ -25,7 +25,7 @@ interface DetailProps {
     onAddToCart?: (product: Product, color?: string, size?: string, qty?: number) => void;
 }
 
-export default function Detail({ onAddToCart }: DetailProps) {
+export default function DetailPage({ onAddToCart }: DetailProps) {
     const { id } = useParams<{ id: string }>();
 
     // Estado do produto (mock)

@@ -79,6 +79,29 @@ def create_product(
     product.save()
     return {"message": "Product created", "id": str(product.id)}
 
+@router.get("/{product_id}", response_model=ProductOut)
+def get_product(product_id: str):
+    """Retorna um único produto pelo ID"""
+    p = Product.objects(id=product_id).first()
+    if not p:
+        raise HTTPException(status_code=404, detail="Product not found")
+
+    return ProductOut(
+        id=str(p.id),
+        name=p.name,
+        description=p.description,
+        price=p.price,
+        stock=p.stock,
+        sizes=p.sizes,
+        available_sizes=p.available_sizes,
+        gender=p.gender,
+        category=p.category,
+        colors=p.colors,
+        available_colors=p.available_colors,
+        images=p.images,
+        created_at=str(p.created_at)
+    )
+
 @router.put("/{product_id}", response_model=ProductOut)
 def update_product(
     product_id: str,

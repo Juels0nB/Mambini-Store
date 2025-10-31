@@ -6,7 +6,7 @@ from app.models.user import User
 
 SECRET_KEY = "YOUR_SECRET_KEY"
 ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 60
+ACCESS_TOKEN_EXPIRE_MINUTES = 500
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="users/login")
 
