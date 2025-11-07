@@ -35,7 +35,7 @@ def login(user: UserLogin):
 
 @router.get("/me", response_model=UserOut)
 def read_users_me(current_user: User = Depends(get_current_user)):
-    """Retorna o usuário logado com base no token JWT"""
+    """Devolve o utilizador logado com base no token JWT"""
     return UserOut(
         email=current_user.email,
         name=current_user.name,
