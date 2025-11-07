@@ -10,6 +10,10 @@ import ProfilePage from "./Pages/ProfilePage.tsx";
 import AdminDashboard from "./Pages/Admin/AdminDashboard.tsx";
 import CartPage from "./Pages/CartPage.tsx";
 import DetailPage from "./Pages/DetailPage.tsx";
+import Returns from "./Pages/Returns.tsx";
+import Shipping from "./Pages/Shipping.tsx";
+import FAQ from "./Pages/Faq.tsx";
+import Contact from "./Pages/ContactUs.tsx";
 
 function App() {
     return (
@@ -26,6 +30,11 @@ function App() {
                     <Route path="/register" element={<RegisterPage />} />
                     <Route path="/profile" element={<ProfilePage />} />
                     <Route path="/admin" element={<AdminDashboard />} />
+
+                    <Route path="/return" element={<Returns />} />
+                    <Route path="/shipping" element={<Shipping />} />
+                    <Route path="/faq" element={<FAQ />} />
+                    <Route path="/us" element={<Contact />} />
                 </Routes>
                 </main>
             <Footer/>

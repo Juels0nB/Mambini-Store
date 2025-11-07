@@ -16,9 +16,9 @@ function Footer() {
                 <div>
                     <h1 className="font-semibold text-lg mb-2">Quick Links</h1>
                     <ul className="text-gray-400 space-y-1">
-                        <li><a href="#">Home</a></li>
-                        <li><a href="#">Shop</a></li>
-                        <li><a href="#">Cart</a></li>
+                        <li><a href="/">Home</a></li>
+                        <li><a href="/products">Shop</a></li>
+                        <li><a href="/cart">Cart</a></li>
                     </ul>
                 </div>
 
@@ -26,10 +26,10 @@ function Footer() {
                 <div>
                     <h1 className="font-semibold text-lg mb-2">Customer Service</h1>
                     <ul className="text-gray-400 space-y-1">
-                        <li><a href="#">Contact Us</a></li>
-                        <li><a href="#">Shipping Policy</a></li>
-                        <li><a href="#">Returns & Exchanges</a></li>
-                        <li><a href="#">FAQs</a></li>
+                        <li><a href="/us">Contact Us</a></li>
+                        <li><a href="/shipping">Shipping Policy</a></li>
+                        <li><a href="/return">Returns & Exchanges</a></li>
+                        <li><a href="/faq">FAQs</a></li>
                     </ul>
                 </div>
 
