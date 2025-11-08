@@ -12,7 +12,7 @@ export interface Product {
     category: string;
     colors: string[];
     available_colors: string[];
-    images: string[];
+    images: (File | string)[];
     created_at?: string;
 }
 
@@ -26,13 +26,60 @@ export const getProductById = async (id: string): Promise<Product> => {
     return res.data;
 };
 
-export const createProduct = async (data: Product): Promise<Product> => {
-    const res = await api.post<Product>("/products/", data);
+/** Criação do produto */
+export const createProduct = async (data: Product): Promise<any> => {
+    const formData = new FormData();
+
+    formData.append("name", data.name);
+    formData.append("description", data.description || "");
+    formData.append("price", String(data.price));
+    formData.append("stock", String(data.stock));
+    formData.append("gender", data.gender);
+    formData.append("category", data.category);
+    formData.append("sizes", data.sizes.join(","));
+    formData.append("available_sizes", data.available_sizes.join(","));
+    formData.append("colors", data.colors.join(","));
+    formData.append("available_colors", data.available_colors.join(","));
+
+    // Adiciona arquivos se existirem
+    data.images?.forEach((img) => {
+        if (img instanceof File) {
+            formData.append("files", img);
+        }
+    });
+
+    const res = await api.post("/products/", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+    });
     return res.data;
 };
 
-export const updateProduct = async (id: string, data: Partial<Product>): Promise<Product> => {
-    const res = await api.put<Product>(`/products/${id}`, data);
+/** Editar produto */
+export const updateProduct = async (id: string, data: Partial<Product>): Promise<any> => {
+    const formData = new FormData();
+
+    if (data.name) formData.append("name", data.name);
+    if (data.description) formData.append("description", data.description);
+    if (data.price !== undefined) formData.append("price", String(data.price));
+    if (data.stock !== undefined) formData.append("stock", String(data.stock));
+    if (data.gender) formData.append("gender", data.gender);
+    if (data.category) formData.append("category", data.category);
+    if (data.sizes) formData.append("sizes", data.sizes.join(","));
+    if (data.available_sizes)
+        formData.append("available_sizes", data.available_sizes.join(","));
+    if (data.colors) formData.append("colors", data.colors.join(","));
+    if (data.available_colors)
+        formData.append("available_colors", data.available_colors.join(","));
+
+    data.images?.forEach((img) => {
+        if (img instanceof File) {
+            formData.append("files", img);
+        }
+    });
+
+    const res = await api.put(`/products/${id}`, formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+    });
     return res.data;
 };
 

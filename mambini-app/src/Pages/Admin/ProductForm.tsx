@@ -4,7 +4,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import type {Product} from "../../api/productApi";
 
 export default function ProductForm() {
-    const { id } = useParams(); // Se tiver ID, é modo edição
+    const { id } = useParams();
     const navigate = useNavigate();
 
     const [form, setForm] = useState<Product>({
@@ -117,19 +117,22 @@ export default function ProductForm() {
                 />
                 <p>Gender</p>
                 <input
+                    name="gender"
                     value={form.gender}
-                    onChange={(e) => handleArrayChange("gender", e.target.value)}
-                    placeholder="Tamanhos (separados por vírgula)"
+                    onChange={handleChange}
+                    placeholder="Género"
                     className="w-full p-2 border rounded"
                 />
 
                 <p>Category</p>
                 <input
+                    name="category"
                     value={form.category}
-                    onChange={(e) => handleArrayChange("category", e.target.value)}
-                    placeholder="categoria (separados por vírgula)"
+                    onChange={handleChange}
+                    placeholder="Categoria"
                     className="w-full p-2 border rounded"
                 />
+
 
                 <p>Colors</p>
                 <input
@@ -148,10 +151,16 @@ export default function ProductForm() {
                 <p>Images</p>
                 <input
                     type="file"
-                    value={form.images.join(", ")}
-                    onChange={(e) => handleArrayChange("images", e.target.value)}
+                    multiple
+                    onChange={(e) => {
+                        if (e.target.files) {
+                            setForm({ ...form, images: Array.from(e.target.files) });
+                        }
+                    }}
                     className="w-full p-2 border rounded"
                 />
+
+
 
                 <button
                     type="submit"
