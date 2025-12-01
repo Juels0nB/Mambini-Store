@@ -83,7 +83,15 @@ function CartPage() {
                             </div>
 
                             <button
-                                onClick={handleCheckout}
+                                onClick={() => {
+                                    const token = localStorage.getItem("token");
+                                    if (!token) {
+                                        alert("Precisas de fazer login para finalizar a compra!");
+                                        navigate("/login");
+                                        return;
+                                    }
+                                    navigate("/checkout");
+                                }}
                                 className="w-full mt-6 py-3 bg-black text-white rounded font-medium hover:bg-gray-800 transition"
                             >
                                 Finalizar Compra

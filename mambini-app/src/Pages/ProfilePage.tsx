@@ -1,10 +1,12 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { getProfile } from "../api/userApi";
 import { AiOutlineUser, AiOutlineShopping, AiOutlineLogout, AiOutlineSetting } from "react-icons/ai";
 
 export default function Profile() {
     const [user, setUser] = useState<any>(null);
     const [activeTab, setActiveTab] = useState("info"); // 'info' ou 'orders'
+    const navigate = useNavigate();
 
     useEffect(() => {
         const token = localStorage.getItem("token");
@@ -60,8 +62,8 @@ export default function Profile() {
                                 <AiOutlineUser /> Dados Pessoais
                             </button>
                             <button
-                                onClick={() => setActiveTab("orders")}
-                                className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition ${activeTab === 'orders' ? 'bg-gray-100 text-gray-900' : 'text-gray-600 hover:bg-gray-50'}`}
+                                onClick={() => navigate("/orders")}
+                                className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-50"
                             >
                                 <AiOutlineShopping /> Encomendas
                             </button>

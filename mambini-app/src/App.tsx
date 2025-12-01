@@ -15,6 +15,9 @@ import Shipping from "./Pages/Shipping.tsx";
 import FAQ from "./Pages/Faq.tsx";
 import Contact from "./Pages/ContactUs.tsx";
 import ProductForm from "./Pages/Admin/ProductForm.tsx";
+import CheckoutPage from "./Pages/CheckoutPage.tsx";
+import OrdersPage from "./Pages/OrdersPage.tsx";
+import OrderDetailPage from "./Pages/OrderDetailPage.tsx";
 import { CartProvider } from "./context/CartContext";
 
 function App() {
@@ -28,6 +31,9 @@ function App() {
                         <Route path="/" element={<HomePage />} />
                         <Route path="/products" element={<ProductsPage />} />
                         <Route path="/cart" element={<CartPage />} />
+                        <Route path="/checkout" element={<CheckoutPage />} />
+                        <Route path="/orders" element={<OrdersPage />} />
+                        <Route path="/orders/:id" element={<OrderDetailPage />} />
                         <Route path="/detail" element={<DetailPage />} />
                         <Route path="/detail/:id" element={<DetailPage />} />
                         <Route path="/login" element={<LoginPage />} />
