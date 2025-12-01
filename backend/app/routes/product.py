@@ -4,7 +4,6 @@ from app.schemas.product import ProductOut
 from app.auth import require_admin
 from typing import List, Union, Optional
 import os
-import uuid
 import cloudinary
 import cloudinary.uploader
 
@@ -15,9 +14,8 @@ cloudinary.config(
     api_secret = os.getenv("API_secret"),
     secure=True
 )
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-UPLOAD_DIR = os.path.join(BASE_DIR, "uploads")
-os.makedirs(UPLOAD_DIR, exist_ok=True)
+
+# ✅ REMOVIDO O OS.MAKEDIRS QUE DAVA ERRO
 
 router = APIRouter(prefix="/products")
 
@@ -59,7 +57,7 @@ def create_product(
 ):
     image_paths = []
 
-    # Lógica de Upload CORRIGIDA
+    # Lógica de Upload Cloudinary
     if files:
         files_list = files if isinstance(files, list) else [files]
         for file in files_list:
@@ -140,11 +138,8 @@ def update_product(
     p.colors = colors.split(",") if colors else []
     p.available_colors = available_colors.split(",") if available_colors else []
 
-    # Se houver novos ficheiros, fazemos upload para o Cloudinary e substituímos
-    # Nota: Em produção idealmente não apagarias as antigas sem validar, mas para simplificar:
     if files:
         new_images = []
-        # Upload das novas
         files_list = files if isinstance(files, list) else [files]
         for file in files_list:
             try:
@@ -152,9 +147,7 @@ def update_product(
                 new_images.append(upload_result["secure_url"])
             except Exception as e:
                 print(f"Erro upload update: {e}")
-                # Se falhar, mantemos as antigas ou lançamos erro
 
-        # Só substitui se o upload correu bem
         if new_images:
             p.images = new_images
 
@@ -181,9 +174,6 @@ def delete_product(product_id: str, admin=Depends(require_admin)):
     p = Product.objects(id=product_id).first()
     if not p:
         raise HTTPException(status_code=404, detail="Product not found")
-
-    # Nota: Não estamos a apagar do Cloudinary aqui para simplificar,
-    # mas deverias usar cloudinary.uploader.destroy() futuramente.
 
     p.delete()
     return {"detail": "Product deleted"}
