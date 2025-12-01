@@ -1,110 +1,97 @@
-import feat1 from '../assets/feat-1.jpg';
-import feat2 from '../assets/feat-2.jpg';
-import { useState } from "react";
+// src/Pages/CartPage.tsx
+import { useCart } from "../context/CartContext";
+import { useNavigate } from "react-router-dom";
 
 function CartPage() {
-    // Estado com produtos do carrinho
-    const [itens, setItens] = useState([
-        {
-            id: 1,
-            nome: "Jacket",
-            tamanho: "L",
-            cor: "Black",
-            preco: 29.99,
-            quantidade: 1,
-            imagem: feat1
-        },
-        {
-            id: 2,
-            nome: "Product 2",
-            tamanho: "M",
-            cor: "Brown",
-            preco: 29.99,
-            quantidade: 1,
-            imagem: feat2
-        },
+    const { cart, removeFromCart, updateQuantity, total } = useCart();
+    const navigate = useNavigate();
 
-    ]);
+    const handleCheckout = () => {
+        const token = localStorage.getItem("token");
 
-    // Funções básicas
-    const aumentar = (id: number) => {
-        setItens(itens.map(item =>
-            item.id === id ? { ...item, quantidade: item.quantidade + 1 } : item
-        ));
+        if (!token) {
+            alert("Precisas de fazer login para finalizar a compra!");
+            navigate("/login");
+            return;
+        }
+
+        // Lógica de sucesso (futuramente podes criar uma API de encomendas aqui)
+        alert("Compra finalizada com sucesso! (Simulação)");
+        // clearCart(); // Se quiseres limpar o carrinho após compra
     };
-
-    const diminuir = (id: number) => {
-        setItens(itens.map(item =>
-            item.id === id && item.quantidade > 1
-                ? { ...item, quantidade: item.quantidade - 1 }
-                : item
-        ));
-    };
-
-    const remover = (id: number) => {
-        setItens(itens.filter(item => item.id !== id));
-    };
-
-    // Calcular total
-    const total = itens.reduce((soma, item) => soma + item.preco * item.quantidade, 0);
 
     return (
-        <div className="min-h-screen flex flex-col ">
-
-
-            {/* Conteúdo principal */}
-            <main className="flex-grow max-w-5xl mx-auto px-4 py-12">
+        <div className="min-h-screen flex flex-col">
+            <main className="flex-grow max-w-5xl mx-auto px-4 py-12 w-full">
                 <h1 className="text-3xl font-bold mb-10">Carrinho de Compras</h1>
 
-                {itens.length === 0 ? (
-                    <p>O carrinho está vazio.</p>
+                {cart.length === 0 ? (
+                    <div className="text-center py-10">
+                        <p className="text-gray-500 mb-4">O teu carrinho está vazio.</p>
+                        <button onClick={() => navigate("/products")} className="text-blue-600 underline">
+                            Voltar à loja
+                        </button>
+                    </div>
                 ) : (
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-15">
-                        {/* Lista de produtos */}
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
+                        {/* Lista de produtos dinâmica */}
                         <div className="lg:col-span-2 space-y-6">
-                            {itens.map(item => (
-                                <div key={item.id} className="flex items-center gap-4 border-b pb-4">
-                                    <img src={item.imagem} alt={item.nome} className="w-32 h-32 rounded" />
+                            {cart.map((item) => (
+                                <div key={`${item.id}-${item.size}`} className="flex items-center gap-4 border-b pb-4">
+                                    <img src={item.image} alt={item.name} className="w-24 h-24 object-cover rounded" />
 
                                     <div className="flex-1">
-                                        <h2 className="font-medium">{item.nome}</h2>
+                                        <h2 className="font-medium">{item.name}</h2>
                                         <p className="text-sm text-gray-500">
-                                            Tamanho: {item.tamanho} | Cor: {item.cor}
+                                            Tamanho: {item.size} {item.color && `| Cor: ${item.color}`}
                                         </p>
-                                        <p className="font-semibold mt-1">€{item.preco.toFixed(2)}</p>
+                                        <p className="font-semibold mt-1">€{item.price.toFixed(2)}</p>
                                     </div>
 
                                     <div className="flex items-center gap-3">
-                                        <button onClick={() => diminuir(item.id)} className="px-2 border rounded">−</button>
-                                        <span>{item.quantidade}</span>
-                                        <button onClick={() => aumentar(item.id)} className="px-2 border rounded">+</button>
+                                        <button
+                                            onClick={() => updateQuantity(item.id, item.size, -1)}
+                                            className="px-2 border rounded hover:bg-gray-100"
+                                        >−</button>
+                                        <span>{item.quantity}</span>
+                                        <button
+                                            onClick={() => updateQuantity(item.id, item.size, 1)}
+                                            className="px-2 border rounded hover:bg-gray-100"
+                                        >+</button>
                                     </div>
 
-                                    <button onClick={() => remover(item.id)} className="text-red-500 ml-4">🗑️</button>
+                                    <button
+                                        onClick={() => removeFromCart(item.id, item.size)}
+                                        className="text-red-500 ml-4 hover:text-red-700"
+                                    >
+                                        🗑️
+                                    </button>
                                 </div>
                             ))}
                         </div>
 
-                        {/* total e o botão de finalizar compra */}
-                        <div className="p-8 border rounded-lg bg-white h-fit">
+                        {/* Resumo e Checkout */}
+                        <div className="p-8 border rounded-lg bg-white h-fit shadow-sm">
                             <h3 className="text-2xl font-semibold mb-3">Resumo</h3>
                             <div className="flex justify-between text-sm mb-2">
                                 <span>Itens:</span>
-                                <span>{itens.length}</span>
+                                <span>{cart.reduce((acc, item) => acc + item.quantity, 0)}</span>
                             </div>
-                            <div className="flex justify-between font-bold border-t pt-2">
+                            <div className="flex justify-between font-bold border-t pt-2 mt-2 text-lg">
                                 <span>Total:</span>
                                 <span>€{total.toFixed(2)}</span>
                             </div>
-                            <button className="w-full mt-6 py-3 bg-black text-white rounded">
+
+                            <button
+                                onClick={handleCheckout}
+                                className="w-full mt-6 py-3 bg-black text-white rounded font-medium hover:bg-gray-800 transition"
+                            >
                                 Finalizar Compra
                             </button>
                         </div>
                     </div>
                 )}
             </main>
-
-
         </div>
     );
 }

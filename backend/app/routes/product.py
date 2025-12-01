@@ -5,6 +5,17 @@ from app.auth import get_current_user, require_admin
 from typing import List, Union, Optional
 import os
 import uuid
+import cloudinary
+import cloudinary.uploader
+from cloudinary.utils import cloudinary_url
+
+# Configuration
+cloudinary.config(
+    cloud_name = "ddyni5b9q",
+    api_key = "351722938126552",
+    api_secret = "4iuJbv4oiZyd0RYGgTFIAa9js9Y", # Click 'View API Keys' above to copy your API secret
+    secure=True
+)
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))  
 UPLOAD_DIR = os.path.join(BASE_DIR, "uploads")
@@ -53,15 +64,26 @@ def create_product(
     if files:
         files_list = files if isinstance(files, list) else [files]
         for file in files_list:
-            file_ext = os.path.splitext(file.filename)[1]
-            unique_name = f"{uuid.uuid4()}{file_ext}"
-            file_path = os.path.join(UPLOAD_DIR, unique_name)
-            
-            with open(file_path, "wb") as f:
-                f.write(file.file.read())
-            file.file.close()
+            try:
+                # Envia direto para a nuvem
+                upload_result = cloudinary.uploader.upload(file.file, folder="mambini_products")
+                # Guarda o link HTTPs seguro
+                image_paths.append(upload_result["secure_url"])
+            except Exception as e:
+                print(f"Erro no upload: {e}")
+                raise HTTPException(status_code=500, detail="Upload image failed")
 
-            image_paths.append(f"/uploads/{unique_name}")
+
+            # with open(file_path, "wb") as f:
+            #     f.write(file.file.read())
+            # image_paths.append(f"/uploads/{unique_name}")
+        #  CÓDIGO NOVO (Cloudinary)
+        # O Cloudinary aceita o ficheiro diretamente do FastAPI
+        result = cloudinary.uploader.upload(file.file, folder="mambini_products")
+
+        # O Cloudinary devolve um URL completo (ex: https://res.cloudinary.com/...)
+        image_paths.append(result["secure_url"])
+
 
     product = Product(
         name=name,

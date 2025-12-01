@@ -1,4 +1,4 @@
-import "./App.css";
+ import "./App.css";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import NavBar from "./components/NavBar.tsx";
 import Footer from "./components/Footer.tsx";
@@ -15,10 +15,12 @@ import Shipping from "./Pages/Shipping.tsx";
 import FAQ from "./Pages/Faq.tsx";
 import Contact from "./Pages/ContactUs.tsx";
 import ProductForm from "./Pages/Admin/ProductForm.tsx";
+import { CartProvider } from "./context/CartContext";
 
 function App() {
     return (
-        <Router>
+        <CartProvider>
+            <Router>
             <div className="flex flex-col bg-gray-100 min-h-screen">
                 <NavBar />
                 <main className="pt-10 flex-grow">
@@ -47,6 +49,7 @@ function App() {
                 <Footer />
             </div>
         </Router>
+     </CartProvider>
     );
 }
 
