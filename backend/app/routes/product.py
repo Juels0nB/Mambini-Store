@@ -9,11 +9,11 @@ import cloudinary
 import cloudinary.uploader
 from cloudinary.utils import cloudinary_url
 
-# Configuration - Carrega credenciais de variáveis de ambiente
+# Configuration
 cloudinary.config(
-    cloud_name=os.getenv("CLOUDINARY_CLOUD_NAME", ""),
-    api_key=os.getenv("CLOUDINARY_API_KEY", ""),
-    api_secret=os.getenv("CLOUDINARY_API_SECRET", ""),
+    cloud_name = "ddyni5b9q",
+    api_key = "351722938126552",
+    api_secret = "4iuJbv4oiZyd0RYGgTFIAa9js9Y", # Click 'View API Keys' above to copy your API secret
     secure=True
 )
 
@@ -65,13 +65,24 @@ def create_product(
         files_list = files if isinstance(files, list) else [files]
         for file in files_list:
             try:
-                # Envia direto para a nuvem (Cloudinary)
+                # Envia direto para a nuvem
                 upload_result = cloudinary.uploader.upload(file.file, folder="mambini_products")
-                # Guarda o link HTTPS seguro
+                # Guarda o link HTTPs seguro
                 image_paths.append(upload_result["secure_url"])
             except Exception as e:
                 print(f"Erro no upload: {e}")
                 raise HTTPException(status_code=500, detail="Upload image failed")
+
+
+            # with open(file_path, "wb") as f:
+            #     f.write(file.file.read())
+            # image_paths.append(f"/uploads/{unique_name}")
+        #  CÓDIGO NOVO (Cloudinary)
+        # O Cloudinary aceita o ficheiro diretamente do FastAPI
+        result = cloudinary.uploader.upload(file.file, folder="mambini_products")
+
+        # O Cloudinary devolve um URL completo (ex: https://res.cloudinary.com/...)
+        image_paths.append(result["secure_url"])
 
 
     product = Product(
