@@ -31,10 +31,10 @@ app.include_router(user.router)
 app.include_router(product.router)
 app.include_router(order.router)
 
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))  
-uploads_path = os.path.join(BASE_DIR, "uploads")
-uploads_path = os.path.abspath(uploads_path)
+#BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+#uploads_path = os.path.join(BASE_DIR, "uploads")
+#uploads_path = os.path.abspath(uploads_path)
 
-os.makedirs(uploads_path, exist_ok=True)
+#os.makedirs(uploads_path, exist_ok=True)
 
-app.mount("/uploads", StaticFiles(directory=uploads_path), name="uploads")
+#app.mount("/uploads", StaticFiles(directory=uploads_path), name="uploads")

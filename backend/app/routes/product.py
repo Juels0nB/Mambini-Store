@@ -1,23 +1,21 @@
 from fastapi import APIRouter, UploadFile, File, Form, Depends, HTTPException
 from app.models.product import Product
-from app.schemas.product import ProductBase, ProductOut
-from app.auth import get_current_user, require_admin
+from app.schemas.product import ProductOut
+from app.auth import require_admin
 from typing import List, Union, Optional
 import os
 import uuid
 import cloudinary
 import cloudinary.uploader
-from cloudinary.utils import cloudinary_url
 
-# Configuration
+# Configuração SEGURA (Lê da Vercel)
 cloudinary.config(
-    cloud_name = "ddyni5b9q",
-    api_key = "351722938126552",
-    api_secret = "4iuJbv4oiZyd0RYGgTFIAa9js9Y", # Click 'View API Keys' above to copy your API secret
+    cloud_name = os.getenv("Cloud_name"),
+    api_key = os.getenv("API_key"),
+    api_secret = os.getenv("API_secret"),
     secure=True
 )
-
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))  
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 UPLOAD_DIR = os.path.join(BASE_DIR, "uploads")
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
@@ -46,44 +44,32 @@ def get_products():
 
 @router.post("/", response_model=dict)
 def create_product(
-    name: str = Form(...),
-    description: str = Form(""),
-    price: float = Form(...),
-    stock: int = Form(0),
-    gender: str = Form(""),
-    category: str = Form(""),
-    sizes: str = Form(""),
-    available_sizes: str = Form(""),
-    colors: str = Form(""),
-    available_colors: str = Form(""),
-    files: Union[UploadFile, list[UploadFile]] = File(default=[]),
-    admin=Depends(require_admin)
+        name: str = Form(...),
+        description: str = Form(""),
+        price: float = Form(...),
+        stock: int = Form(0),
+        gender: str = Form(""),
+        category: str = Form(""),
+        sizes: str = Form(""),
+        available_sizes: str = Form(""),
+        colors: str = Form(""),
+        available_colors: str = Form(""),
+        files: Union[UploadFile, list[UploadFile]] = File(default=[]),
+        admin=Depends(require_admin)
 ):
     image_paths = []
 
+    # Lógica de Upload CORRIGIDA
     if files:
         files_list = files if isinstance(files, list) else [files]
         for file in files_list:
             try:
-                # Envia direto para a nuvem
+                # Envia para o Cloudinary
                 upload_result = cloudinary.uploader.upload(file.file, folder="mambini_products")
-                # Guarda o link HTTPs seguro
                 image_paths.append(upload_result["secure_url"])
             except Exception as e:
                 print(f"Erro no upload: {e}")
                 raise HTTPException(status_code=500, detail="Upload image failed")
-
-
-            # with open(file_path, "wb") as f:
-            #     f.write(file.file.read())
-            # image_paths.append(f"/uploads/{unique_name}")
-        #  CÓDIGO NOVO (Cloudinary)
-        # O Cloudinary aceita o ficheiro diretamente do FastAPI
-        result = cloudinary.uploader.upload(file.file, folder="mambini_products")
-
-        # O Cloudinary devolve um URL completo (ex: https://res.cloudinary.com/...)
-        image_paths.append(result["secure_url"])
-
 
     product = Product(
         name=name,
@@ -103,7 +89,6 @@ def create_product(
 
 @router.get("/{product_id}", response_model=ProductOut)
 def get_product(product_id: str):
-    """Retorna um único produto pelo ID"""
     p = Product.objects(id=product_id).first()
     if not p:
         raise HTTPException(status_code=404, detail="Product not found")
@@ -126,19 +111,19 @@ def get_product(product_id: str):
 
 @router.put("/{product_id}", response_model=ProductOut)
 def update_product(
-    product_id: str,
-    name: str = Form(...),
-    description: str = Form(""),
-    price: float = Form(...),
-    stock: int = Form(...),
-    gender: str = Form(""),
-    category: str = Form(""),
-    sizes: str = Form(""),
-    available_sizes: str = Form(""),
-    colors: str = Form(""),
-    available_colors: str = Form(""),
-    files: Optional[List[UploadFile]] = File(default=None),
-    admin=Depends(require_admin)
+        product_id: str,
+        name: str = Form(...),
+        description: str = Form(""),
+        price: float = Form(...),
+        stock: int = Form(...),
+        gender: str = Form(""),
+        category: str = Form(""),
+        sizes: str = Form(""),
+        available_sizes: str = Form(""),
+        colors: str = Form(""),
+        available_colors: str = Form(""),
+        files: Optional[List[UploadFile]] = File(default=None),
+        admin=Depends(require_admin)
 ):
     p = Product.objects(id=product_id).first()
     if not p:
@@ -155,26 +140,26 @@ def update_product(
     p.colors = colors.split(",") if colors else []
     p.available_colors = available_colors.split(",") if available_colors else []
 
+    # Se houver novos ficheiros, fazemos upload para o Cloudinary e substituímos
+    # Nota: Em produção idealmente não apagarias as antigas sem validar, mas para simplificar:
     if files:
-        for img in p.images:
-            filename = os.path.basename(img)  
-            full_path = os.path.join(UPLOAD_DIR, filename) 
-            if os.path.exists(full_path):
-                os.remove(full_path)
-
         new_images = []
-        for file in files:
-            ext = os.path.splitext(file.filename)[1] or ".bin"
-            unique_name = f"{uuid.uuid4()}{ext}"
-            file_path = os.path.join(UPLOAD_DIR, unique_name)
-            with open(file_path, "wb") as f:
-                f.write(file.file.read())
-            file.file.close()
-            new_images.append(f"/uploads/{unique_name}")
+        # Upload das novas
+        files_list = files if isinstance(files, list) else [files]
+        for file in files_list:
+            try:
+                upload_result = cloudinary.uploader.upload(file.file, folder="mambini_products")
+                new_images.append(upload_result["secure_url"])
+            except Exception as e:
+                print(f"Erro upload update: {e}")
+                # Se falhar, mantemos as antigas ou lançamos erro
 
-        p.images = new_images
+        # Só substitui se o upload correu bem
+        if new_images:
+            p.images = new_images
 
     p.save()
+
     return ProductOut(
         id=str(p.id),
         name=p.name,
@@ -197,11 +182,8 @@ def delete_product(product_id: str, admin=Depends(require_admin)):
     if not p:
         raise HTTPException(status_code=404, detail="Product not found")
 
-
-    for image_path in p.images:
-        full_path = os.path.join(BASE_DIR, image_path.lstrip("/")) 
-        if os.path.exists(full_path):
-            os.remove(full_path)
+    # Nota: Não estamos a apagar do Cloudinary aqui para simplificar,
+    # mas deverias usar cloudinary.uploader.destroy() futuramente.
 
     p.delete()
     return {"detail": "Product deleted"}
