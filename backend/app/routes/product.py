@@ -15,9 +15,9 @@ cloudinary.config(
     api_secret = os.getenv("API_secret"),
     secure=True
 )
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-UPLOAD_DIR = os.path.join(BASE_DIR, "uploads")
-os.makedirs(UPLOAD_DIR, exist_ok=True)
+#BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+#UPLOAD_DIR = os.path.join(BASE_DIR, "uploads")
+#os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 router = APIRouter(prefix="/products")
 
