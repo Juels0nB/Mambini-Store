@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from app.routes import user, product
+from app.routes import user, product, order
 from dotenv import load_dotenv
 import os
 
@@ -38,6 +38,7 @@ app.add_middleware(
 
 app.include_router(user.router)
 app.include_router(product.router)
+app.include_router(order.router)
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))  
 uploads_path = os.path.join(BASE_DIR, "uploads")
