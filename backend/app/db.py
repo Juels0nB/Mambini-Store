@@ -1,4 +1,7 @@
 import os
 from mongoengine import connect
-MONGO_URL = os.getenv("mongodb+srv://Vercel-Admin-Mambini-Store:CtpFvdifk3wJa4EX@mambini-store.ywfkrvf.mongodb.net/?retryWrites=true&w=majority","mongodb://localhost:27017/mydatabase")
+
+# Carrega URL de conexão MongoDB de variável de ambiente
+# Fallback para desenvolvimento local
+MONGO_URL = os.getenv("MONGO_URL", "mongodb://localhost:27017/mydatabase")
 connect(host=MONGO_URL)
