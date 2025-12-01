@@ -1,15 +1,74 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import ProductList from "./ProductList";
 import ProductForm from "./ProductForm";
 import OrderList from "./OrderList";
 import { AiOutlinePlus, AiOutlineUnorderedList, AiOutlineDollar, AiOutlineSkin, AiOutlineUser, AiOutlineShoppingCart } from "react-icons/ai";
+import { getProducts } from "../../api/productApi";
+import { getAllOrders } from "../../api/orderApi";
 
 type TabType = "products" | "orders";
 type ProductViewType = "list" | "form";
 
+interface DashboardStats {
+    totalProducts: number;
+    totalSales: number;
+    totalCustomers: number;
+}
+
 export default function AdminDashboard() {
     const [activeTab, setActiveTab] = useState<TabType>("products");
     const [productView, setProductView] = useState<ProductViewType>("list");
+    const [stats, setStats] = useState<DashboardStats>({
+        totalProducts: 0,
+        totalSales: 0,
+        totalCustomers: 0,
+    });
+    const [loadingStats, setLoadingStats] = useState(true);
+
+    useEffect(() => {
+        const loadStats = async () => {
+            try {
+                setLoadingStats(true);
+                
+                // Carregar produtos e encomendas em paralelo
+                const [products, orders] = await Promise.all([
+                    getProducts(),
+                    getAllOrders(),
+                ]);
+
+                // Calcular estatísticas
+                const totalProducts = products.length;
+                
+                // Somar todas as vendas
+                const totalSales = orders.reduce((sum, order) => sum + order.total_amount, 0);
+                
+                // Contar clientes únicos (user_id únicos)
+                const uniqueCustomers = new Set(orders.map(order => order.user_id));
+                const totalCustomers = uniqueCustomers.size;
+
+                setStats({
+                    totalProducts,
+                    totalSales,
+                    totalCustomers,
+                });
+            } catch (error: any) {
+                console.error("Erro ao carregar estatísticas:", error);
+                // Em caso de erro, manter valores em 0
+            } finally {
+                setLoadingStats(false);
+            }
+        };
+
+        loadStats();
+    }, []);
+
+    const formatCurrency = (amount: number) => {
+        return new Intl.NumberFormat("pt-PT", {
+            style: "currency",
+            currency: "EUR",
+            minimumFractionDigits: 2,
+        }).format(amount);
+    };
 
     return (
         <div className="min-h-screen bg-gray-100 p-6">
@@ -65,27 +124,45 @@ export default function AdminDashboard() {
                     </nav>
                 </div>
 
-                {/* Estatísticas (Mock) */}
+                {/* Estatísticas */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
                     <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex items-center gap-4">
                         <div className="p-3 bg-blue-100 text-blue-600 rounded-lg text-2xl"><AiOutlineSkin /></div>
                         <div>
                             <p className="text-gray-500 text-sm">Total Produtos</p>
-                            <h3 className="text-2xl font-bold">124</h3>
+                            <h3 className="text-2xl font-bold">
+                                {loadingStats ? (
+                                    <span className="text-gray-400">...</span>
+                                ) : (
+                                    stats.totalProducts.toLocaleString("pt-PT")
+                                )}
+                            </h3>
                         </div>
                     </div>
                     <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex items-center gap-4">
                         <div className="p-3 bg-green-100 text-green-600 rounded-lg text-2xl"><AiOutlineDollar /></div>
                         <div>
                             <p className="text-gray-500 text-sm">Vendas Totais</p>
-                            <h3 className="text-2xl font-bold">€12,450</h3>
+                            <h3 className="text-2xl font-bold">
+                                {loadingStats ? (
+                                    <span className="text-gray-400">...</span>
+                                ) : (
+                                    formatCurrency(stats.totalSales)
+                                )}
+                            </h3>
                         </div>
                     </div>
                     <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex items-center gap-4">
                         <div className="p-3 bg-purple-100 text-purple-600 rounded-lg text-2xl"><AiOutlineUser /></div>
                         <div>
                             <p className="text-gray-500 text-sm">Clientes</p>
-                            <h3 className="text-2xl font-bold">1,203</h3>
+                            <h3 className="text-2xl font-bold">
+                                {loadingStats ? (
+                                    <span className="text-gray-400">...</span>
+                                ) : (
+                                    stats.totalCustomers.toLocaleString("pt-PT")
+                                )}
+                            </h3>
                         </div>
                     </div>
                 </div>
