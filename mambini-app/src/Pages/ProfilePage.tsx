@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import {Link, useNavigate} from "react-router-dom";
 import { getProfile } from "../api/userApi";
 import { AiOutlineUser, AiOutlineShopping, AiOutlineLogout, AiOutlineSetting } from "react-icons/ai";
 
@@ -68,9 +68,9 @@ export default function Profile() {
                                 <AiOutlineShopping /> Encomendas
                             </button>
                             {user.role === "admin" && (
-                                <a href="/admin" className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-blue-600 hover:bg-blue-50 ml-auto">
+                                <Link to="/admin" className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-blue-600 hover:bg-blue-50 ml-auto">
                                     <AiOutlineSetting /> Painel Admin
-                                </a>
+                                </Link>
                             )}
                             <button
                                 onClick={handleLogout}
@@ -115,7 +115,7 @@ export default function Profile() {
                             <div className="border rounded-lg p-8 text-center bg-gray-50">
                                 <AiOutlineShopping className="mx-auto text-4xl text-gray-300 mb-2" />
                                 <p className="text-gray-500">Ainda não fizeste nenhuma encomenda.</p>
-                                <a href="/products" className="text-black font-semibold underline mt-2 inline-block">Começar a comprar</a>
+                                <Link to="/products" className="text-black font-semibold underline mt-2 inline-block">Começar a comprar</Link>
                             </div>
                         </div>
                     )}

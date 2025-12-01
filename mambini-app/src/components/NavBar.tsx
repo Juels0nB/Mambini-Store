@@ -23,10 +23,10 @@ function NavBar() {
                 {/* LINKS DESKTOP */}
                 <ul className="hidden md:flex items-center gap-6 text-sm font-medium">
                     <li className="hover:text-black text-gray-600 cursor-pointer">
-                        <a href="/">Home</a>
+                        <Link to="/">Home</Link>
                     </li>
                     <li className="hover:text-black text-gray-600 cursor-pointer">
-                        <a href="/products">Shop</a>
+                        <Link to="/products">Shop</Link>
                     </li>
 
                     {/* SEARCH BAR */}
@@ -69,15 +69,15 @@ function NavBar() {
                     nav ? "translate-x-0" : "-translate-x-full"
                 }`}
             >
-                <h1 className="text-xl font-bold p-6 border-b border-gray-200">
+                <Link to="/" className="text-xl font-bold tracking-wide">
                     MAMBINI STORE
-                </h1>
+                </Link>
                 <ul className="p-6 space-y-4 text-gray-700 font-medium">
                     <li onClick={handleNav} className="border-b pb-2">
-                        <a href="/">Home</a>
+                        <Link to="/">Home</Link>
                     </li>
                     <li className="border-b pb-2">
-                        <a href="/products">Shop</a>
+                        <Link to="/products">Shop</Link>
                     </li>
                     <li className="flex items-center gap-2 border-b pb-2">
                         <AiOutlineSearch size={18} />
