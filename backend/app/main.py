@@ -12,7 +12,7 @@ app = FastAPI(title="Backend MongoEngine + FastAPI")
 #  Permitir conexões com o frontend (Vite: localhost:5173)
 origins = [
     "http://localhost:5173",
-    "https://mambini-store.vercel.app/"
+    "https://mambini-store.vercel.app"
 ]
 
 app.add_middleware(

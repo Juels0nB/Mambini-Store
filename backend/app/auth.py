@@ -3,9 +3,8 @@ from jose import jwt, JWTError
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from app.models.user import User
-
-SECRET_KEY = "YOUR_SECRET_KEY"
-ALGORITHM = "HS256"
+import os
+SECRET_KEY = os.getenv("SECRET_KEY", "uma_chave_secreta_para_testes_locais")ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 500
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="users/login")
