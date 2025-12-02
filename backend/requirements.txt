@@ -2,9 +2,11 @@ fastapi
 uvicorn
 mongoengine #Funções e modelos de MongoDB
 pydantic[email] #Biblioteca própria para validação de emails
+email-validator
 python-jose[cryptography] #Encryptar passwords
 passlib[argon2] #Leitura de has/criação
 python-multipart #Permite que armazenemos/recebemos multiplas imagenss
 cloudinary
 python-dotenv #Carregar variáveis de ambiente do arquivo .env
 argon2-cffi
+dnspython
