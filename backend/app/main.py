@@ -23,7 +23,11 @@ origins = [
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
+    allow_origins=[
+        "http://localhost:5173",
+        "https://mambini-store-f.vercel.app" # O teu site oficial
+    ],
+    allow_origin_regex="https://.*\.vercel\.app", # Aceita qualquer site .vercel.app (Previews)
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
