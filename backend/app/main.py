@@ -1,44 +1,39 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-#from fastapi.staticfiles import StaticFiles
 from app.routes import user, product, order
-from dotenv import load_dotenv
+import app.db  # Conexão DB
 import os
 
-# Carrega variáveis de ambiente do arquivo .env
-load_dotenv()
+# Tenta carregar dotenv, mas não falha se não existir (bom para Vercel)
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    pass
 
-import app.db  # importa a conexão MongoDB
+app = FastAPI(title="Backend Mambini Store")
 
-
-app = FastAPI(title="Backend MongoEngine + FastAPI")
-
-#  Permitir conexões com o frontend (Vite: localhost:5173)
+# LISTA DE ORIGENS (Atualiza com o TEU link exato do frontend)
 origins = [
     "http://localhost:5173",
     "http://127.0.0.1:5173",
-    "https://mambini-store-f.vercel.app",
-    "https://mambini-store-f.vercel.app/",
-    "https://mambini-store.vercel.app",
-    "https://mambini-store.vercel.app/"
+    "https://mambini-store-f.vercel.app",   # Teu Frontend
+    "https://mambini-store-f.vercel.app/"   # Teu Frontend com barra
 ]
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,  # Domínios permitidos
+    allow_origins=origins,
     allow_credentials=True,
-    allow_methods=["*"],    # Permite todos os métodos (GET, POST, etc)
-    allow_headers=["*"],    # Permite todos os headers (incluindo Authorization)
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
+
+# Rota de teste simples para ver se o servidor está vivo
+@app.get("/")
+def read_root():
+    return {"status": "ok", "message": "Backend a funcionar!"}
 
 app.include_router(user.router)
 app.include_router(product.router)
 app.include_router(order.router)
-
-#BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-#uploads_path = os.path.join(BASE_DIR, "uploads")
-#uploads_path = os.path.abspath(uploads_path)
-
-#os.makedirs(uploads_path, exist_ok=True)
-
-#app.mount("/uploads", StaticFiles(directory=uploads_path), name="uploads")
