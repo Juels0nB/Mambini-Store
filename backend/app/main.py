@@ -27,7 +27,8 @@ app.add_middleware(
         "http://localhost:5173",
         "https://mambini-store-f.vercel.app" # O teu site oficial
     ],
-    allow_origin_regex="https://.*\.vercel\.app", # Aceita qualquer site .vercel.app (Previews)
+
+    allow_origin_regex=r"https://.*\.vercel\.app",  # Nota o 'r' no início # Aceita qualquer site .vercel.app (Previews)
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
