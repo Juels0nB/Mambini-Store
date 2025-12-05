@@ -6,20 +6,6 @@ function CartPage() {
     const { cart, removeFromCart, updateQuantity, total } = useCart();
     const navigate = useNavigate();
 
-    const handleCheckout = () => {
-        const token = localStorage.getItem("token");
-
-        if (!token) {
-            alert("Precisas de fazer login para finalizar a compra!");
-            navigate("/login");
-            return;
-        }
-
-        // Lógica de sucesso (futuramente podes criar uma API de encomendas aqui)
-        alert("Compra finalizada com sucesso! (Simulação)");
-        // clearCart(); // Se quiseres limpar o carrinho após compra
-    };
-
     return (
         <div className="min-h-screen flex flex-col">
             <main className="flex-grow max-w-5xl mx-auto px-4 py-12 w-full">
@@ -74,7 +60,7 @@ function CartPage() {
                                     </div>
                                     {item.stock !== undefined && (
                                         <p className="text-xs text-gray-500 mt-1">
-                                            Stock: {item.stock}
+                                            Quantidade disponível: {item.stock}
                                         </p>
                                     )}
 

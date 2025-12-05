@@ -8,7 +8,7 @@ export interface CartItem {
     size: string;
     color?: string;
     quantity: number;
-    stock?: number; // Stock disponível do produto
+    stock?: number; // Quantidade disponível do produto
 }
 
 interface CartContextType {
@@ -44,9 +44,10 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
             if (existingItem) {
                 const newQuantity = existingItem.quantity + newItem.quantity;
-                // Validar stock se disponível
+                // Validar que a quantidade total não excede o stock disponível
                 if (newItem.stock !== undefined && newQuantity > newItem.stock) {
-                    throw new Error(`Stock insuficiente. Disponível: ${newItem.stock}`);
+                    const available = newItem.stock - existingItem.quantity;
+                    throw new Error(`Quantidade insuficiente. Disponível: ${available} unidades (${newItem.stock} no total, ${existingItem.quantity} já no carrinho).`);
                 }
                 return prevCart.map((item) =>
                     item.id === newItem.id && item.size === newItem.size
@@ -54,9 +55,9 @@ export function CartProvider({ children }: { children: ReactNode }) {
                         : item
                 );
             } else {
-                // Validar stock se disponível
+                // Validar quantidade se disponível
                 if (newItem.stock !== undefined && newItem.quantity > newItem.stock) {
-                    throw new Error(`Stock insuficiente. Disponível: ${newItem.stock}`);
+                    throw new Error(`Quantidade insuficiente. Disponível: ${newItem.stock} unidades.`);
                 }
                 return [...prevCart, newItem];
             }
@@ -72,9 +73,9 @@ export function CartProvider({ children }: { children: ReactNode }) {
             prev.map((item) => {
                 if (item.id === id && item.size === size) {
                     const newQty = item.quantity + amount;
-                    // Validar stock se disponível
+                    // Validar quantidade se disponível
                     if (newQty > 0 && item.stock !== undefined && newQty > item.stock) {
-                        throw new Error(`Stock insuficiente. Disponível: ${item.stock}`);
+                        throw new Error(`Quantidade insuficiente. Disponível: ${item.stock}`);
                     }
                     return newQty > 0 ? { ...item, quantity: newQty } : item;
                 }

@@ -12,9 +12,9 @@ router = APIRouter(prefix="/orders")
 def create_order(order_data: OrderCreate, current_user=Depends(get_current_user)):
     """
     Cria um novo pedido a partir do carrinho do usuário.
-    Valida estoque e atualiza produtos.
+    Valida quantidade e atualiza produtos.
     """
-    # Validar estoque e calcular total
+    # Validar quantidade e calcular total
     total_amount = 0.0
     validated_items = []
     
@@ -28,17 +28,17 @@ def create_order(order_data: OrderCreate, current_user=Depends(get_current_user)
                     detail=f"Produto {item.product_id} não encontrado"
                 )
             
-            # Validar estoque
+            # Validar quantidade
             if product.stock is None or product.stock < 0:
                 raise HTTPException(
                     status_code=status.HTTP_400_BAD_REQUEST,
-                    detail=f"Produto {product.name} tem stock inválido"
+                    detail=f"Produto {product.name} tem quantidade inválida"
                 )
             
             if product.stock < item.quantity:
                 raise HTTPException(
                     status_code=status.HTTP_400_BAD_REQUEST,
-                    detail=f"Estoque insuficiente para {product.name}. Disponível: {product.stock}, Solicitado: {item.quantity}"
+                    detail=f"Quantidade insuficiente para {product.name}. Disponível: {product.stock}, Solicitado: {item.quantity}"
                 )
             
             if item.quantity <= 0:
@@ -62,7 +62,7 @@ def create_order(order_data: OrderCreate, current_user=Depends(get_current_user)
                 image=item.image or (product.images[0] if product.images else "")
             ))
             
-            # Atualizar estoque
+            # Atualizar quantidade
             product.stock -= item.quantity
             product.save()
             

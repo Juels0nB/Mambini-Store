@@ -100,7 +100,7 @@ export default function ProductForm() {
                     </div>
 
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Stock (Unidades)</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Quantidade (Unidades)</label>
                         <input
                             name="stock"
                             type="number"

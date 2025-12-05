@@ -7,7 +7,7 @@ import { useCart } from "../context/CartContext";
 
 export default function DetailPage() {
     const { id } = useParams<{ id: string }>();
-    const { addToCart } = useCart();
+    const { addToCart, cart } = useCart();
 
     const [product, setProduct] = useState<Product | null>(null);
     const [selectedColor, setSelectedColor] = useState<string | undefined>(undefined);
@@ -49,6 +49,30 @@ export default function DetailPage() {
         fetchProduct();
     }, [id]);
 
+    // Calcular quantidade já no carrinho para este produto e tamanho
+    const sizeToCheck = selectedSize || "Único";
+    const existingCartItem = product 
+        ? cart.find((item) => item.id === product.id && item.size === sizeToCheck)
+        : null;
+    const quantityInCart = existingCartItem ? existingCartItem.quantity : 0;
+    const availableStock = product?.stock !== undefined 
+        ? product.stock - quantityInCart 
+        : undefined;
+
+    // Ajustar quantidade selecionada se exceder o stock disponível
+    useEffect(() => {
+        if (availableStock !== undefined) {
+            setQty((currentQty) => {
+                if (availableStock > 0 && currentQty > availableStock) {
+                    return availableStock;
+                } else if (availableStock <= 0 && currentQty > 1) {
+                    return 1;
+                }
+                return currentQty;
+            });
+        }
+    }, [availableStock]);
+
     if (loading || !product) return <p className="text-center py-20">A carregar produto...</p>;
 
     const handleAddToCart = () => {
@@ -64,14 +88,15 @@ export default function DetailPage() {
             return;
         }
 
-        // Validação de Stock
+        // Validação de Quantidade
         if (product.stock !== undefined && product.stock <= 0) {
             alert("Este produto está fora de stock.");
             return;
         }
 
-        if (product.stock !== undefined && qty > product.stock) {
-            alert(`Stock insuficiente. Disponível: ${product.stock} unidades.`);
+        // Verificar se a quantidade solicitada + quantidade já no carrinho não excede o stock
+        if (availableStock !== undefined && qty > availableStock) {
+            alert(`Quantidade insuficiente. Disponível: ${availableStock} unidades (${product.stock} no total, ${quantityInCart} já no carrinho).`);
             return;
         }
 
@@ -81,7 +106,7 @@ export default function DetailPage() {
                 name: product.name,
                 price: product.price,
                 image: mainImage || "/placeholder.png",
-                size: selectedSize || "Único",
+                size: sizeToCheck,
                 quantity: qty,
                 color: selectedColor || "Padrão",
                 stock: product.stock
@@ -196,11 +221,11 @@ export default function DetailPage() {
                                 <span className="px-4 font-medium">{qty}</span>
                                 <button
                                     onClick={() => {
-                                        const maxQty = product.stock !== undefined ? product.stock : Infinity;
+                                        const maxQty = availableStock !== undefined ? availableStock : Infinity;
                                         setQty(Math.min(maxQty, qty + 1));
                                     }}
                                     className="px-4 py-2 text-gray-600 hover:bg-gray-100"
-                                    disabled={product.stock !== undefined && qty >= product.stock}
+                                    disabled={availableStock !== undefined && qty >= availableStock}
                                 >
                                     +
                                 </button>
@@ -222,7 +247,14 @@ export default function DetailPage() {
                         </div>
                         {product.stock !== undefined && (
                             <p className="text-sm text-gray-600 mt-2">
-                                Stock disponível: {product.stock} unidades
+                                {quantityInCart > 0 ? (
+                                    <>
+                                        Quantidade disponível: {availableStock} unidades 
+                                        <span className="text-gray-500"> (Total: {product.stock}, {quantityInCart} no carrinho)</span>
+                                    </>
+                                ) : (
+                                    <>Quantidade disponível: {product.stock} unidades</>
+                                )}
                             </p>
                         )}
 
