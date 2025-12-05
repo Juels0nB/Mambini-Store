@@ -171,6 +171,15 @@ export default function CheckoutPage() {
                                     />
                                 </div>
                             </div>
+                            {/*Botão submeter formulário*/}
+                            <button
+                                type="submit"
+                                disabled={loading || cart.length === 0}
+                                className="w-full mt-6 py-3 bg-black text-white rounded font-medium hover:bg-gray-800 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                {loading ? "A processar..." : "Confirmar Pedido"}
+                            </button>
+
                         </form>
                     </div>
 
@@ -197,13 +206,6 @@ export default function CheckoutPage() {
                                 </div>
                             </div>
 
-                            <button
-                                onClick={handleSubmit}
-                                disabled={loading || cart.length === 0}
-                                className="w-full mt-6 py-3 bg-black text-white rounded font-medium hover:bg-gray-800 transition disabled:opacity-50 disabled:cursor-not-allowed"
-                            >
-                                {loading ? "A processar..." : "Confirmar Pedido"}
-                            </button>
 
                             <button
                                 onClick={() => navigate("/cart")}
