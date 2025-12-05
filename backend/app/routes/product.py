@@ -4,6 +4,7 @@ from app.models.product import Product
 from app.schemas.product import ProductOut
 from app.auth import require_admin
 from typing import List, Union, Optional
+from mongoengine import Q
 import os
 import cloudinary
 import cloudinary.uploader
@@ -21,7 +22,22 @@ cloudinary.config(
 router = APIRouter(prefix="/products")
 
 @router.get("/", response_model=List[ProductOut])
-def get_products():
+def get_products(q: Optional[str] = None):
+    """
+    Lista todos os produtos ou filtra por termo de pesquisa.
+    Parâmetro 'q' busca em nome, descrição e categoria.
+    """
+    # Se houver termo de pesquisa, filtrar produtos
+    if q:
+        # Busca case-insensitive em nome, descrição e categoria usando Q objects
+        query_set = Product.objects(
+            Q(name__icontains=q) | 
+            Q(description__icontains=q) | 
+            Q(category__icontains=q)
+        )
+    else:
+        query_set = Product.objects()
+    
     return [
         ProductOut(
             id=str(p.id),
@@ -39,7 +55,7 @@ def get_products():
             visible_images=p.visible_images if hasattr(p, 'visible_images') else (p.images if p.images else []),
             created_at=str(p.created_at)
         )
-        for p in Product.objects()
+        for p in query_set
     ]
 
 @router.post("/", response_model=dict)

@@ -17,8 +17,9 @@ export interface Product {
     created_at?: string;
 }
 
-export const getProducts = async (): Promise<Product[]> => {
-    const res = await api.get<Product[]>("/products/");
+export const getProducts = async (searchQuery?: string): Promise<Product[]> => {
+    const params = searchQuery ? { q: searchQuery } : {};
+    const res = await api.get<Product[]>("/products/", { params });
     return res.data;
 };
 

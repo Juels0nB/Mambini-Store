@@ -6,13 +6,23 @@ import {
     AiOutlineShoppingCart,
     AiOutlineUser,
 } from "react-icons/ai";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useCart } from "../context/CartContext";
 
 function NavBar() {
     const { cartCount } = useCart();
     const [nav, setNav] = useState(false);
+    const [searchQuery, setSearchQuery] = useState("");
+    const navigate = useNavigate();
     const handleNav = () => setNav(!nav);
+
+    const handleSearch = (e: React.FormEvent) => {
+        e.preventDefault();
+        if (searchQuery.trim()) {
+            navigate(`/products?q=${encodeURIComponent(searchQuery.trim())}`);
+            setSearchQuery("");
+        }
+    };
 
     return (
         <header className="fixed top-0 left-0 w-full bg-white shadow-sm z-50">
@@ -30,14 +40,16 @@ function NavBar() {
                     </li>
 
                     {/* SEARCH BAR */}
-                    <div className="flex items-center bg-gray-100 px-3 py-1.5 rounded-full">
+                    <form onSubmit={handleSearch} className="flex items-center bg-gray-100 px-3 py-1.5 rounded-full">
                         <AiOutlineSearch size={18} className="text-gray-400 mr-2" />
                         <input
                             type="text"
                             placeholder="Search..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
                             className="bg-transparent outline-none text-sm placeholder-gray-400"
                         />
-                    </div>
+                    </form>
 
                     {/* CART + USER ICONS */}
                     <div className="flex items-center gap-5">
@@ -79,13 +91,17 @@ function NavBar() {
                     <li className="border-b pb-2">
                         <Link to="/products">Shop</Link>
                     </li>
-                    <li className="flex items-center gap-2 border-b pb-2">
-                        <AiOutlineSearch size={18} />
-                        <input
-                            type="text"
-                            placeholder="Search..."
-                            className="bg-transparent outline-none text-sm placeholder-gray-500"
-                        />
+                    <li className="border-b pb-2">
+                        <form onSubmit={handleSearch} className="flex items-center gap-2">
+                            <AiOutlineSearch size={18} />
+                            <input
+                                type="text"
+                                placeholder="Search..."
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                className="bg-transparent outline-none text-sm placeholder-gray-500 flex-1"
+                            />
+                        </form>
                     </li>
                     <li className="flex items-center gap-3">
                         <Link to="/cart">
