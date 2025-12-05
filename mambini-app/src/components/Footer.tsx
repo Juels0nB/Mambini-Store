@@ -35,18 +35,9 @@ function Footer() {
 
                 {/* Stay Updated */}
                 <div>
-                    <h1 className="font-semibold text-lg mb-2">Stay Updated</h1>
-                    <p className="text-gray-400 mb-2">Subscribe to our newsletter</p>
-                    <div className="flex gap-2 background-slate-100 bg-white rounded-lg" >
-                        <input
-                            type="email"
-                            placeholder="Your email"
-                            className="rounded-l-lg py-4 px-4 text-slate-500  "
-                        />
-                        <button className="bg-gray-800 border-gray-800 font-semibold rounded-r-lg px-20 py-2 hover:bg-gray-200 transition">
-                            Join
-                        </button>
-                    </div>
+                    <h1 className="font-semibold text-lg mb-2">Contact Us</h1>
+                    <p className="text-gray-400 mb-2">suporte@mambinistore.com</p>
+
                 </div>
             </div>
 
