@@ -64,17 +64,33 @@ export default function DetailPage() {
             return;
         }
 
-        addToCart({
-            id: product.id!,
-            name: product.name,
-            price: product.price,
-            image: mainImage || "/placeholder.png",
-            size: selectedSize || "Único",
-            quantity: qty,
-            color: selectedColor || "Padrão" // ✅ Agora usa a cor selecionada
-        });
+        // Validação de Stock
+        if (product.stock !== undefined && product.stock <= 0) {
+            alert("Este produto está fora de stock.");
+            return;
+        }
 
-        alert("Produto adicionado ao carrinho!");
+        if (product.stock !== undefined && qty > product.stock) {
+            alert(`Stock insuficiente. Disponível: ${product.stock} unidades.`);
+            return;
+        }
+
+        try {
+            addToCart({
+                id: product.id!,
+                name: product.name,
+                price: product.price,
+                image: mainImage || "/placeholder.png",
+                size: selectedSize || "Único",
+                quantity: qty,
+                color: selectedColor || "Padrão",
+                stock: product.stock
+            });
+
+            alert("Produto adicionado ao carrinho!");
+        } catch (error) {
+            alert(error instanceof Error ? error.message : "Erro ao adicionar ao carrinho");
+        }
     };
 
     return (
@@ -179,8 +195,12 @@ export default function DetailPage() {
                                 </button>
                                 <span className="px-4 font-medium">{qty}</span>
                                 <button
-                                    onClick={() => setQty(qty + 1)}
+                                    onClick={() => {
+                                        const maxQty = product.stock !== undefined ? product.stock : Infinity;
+                                        setQty(Math.min(maxQty, qty + 1));
+                                    }}
                                     className="px-4 py-2 text-gray-600 hover:bg-gray-100"
+                                    disabled={product.stock !== undefined && qty >= product.stock}
                                 >
                                     +
                                 </button>
@@ -188,11 +208,23 @@ export default function DetailPage() {
 
                             <button
                                 onClick={handleAddToCart}
-                                className="flex-1 bg-black text-white px-6 py-3 rounded-md font-medium hover:bg-gray-800 transition shadow-sm"
+                                disabled={product.stock !== undefined && product.stock <= 0}
+                                className={`flex-1 px-6 py-3 rounded-md font-medium transition shadow-sm ${
+                                    product.stock !== undefined && product.stock <= 0
+                                        ? "bg-gray-400 text-gray-600 cursor-not-allowed"
+                                        : "bg-black text-white hover:bg-gray-800"
+                                }`}
                             >
-                                Adicionar ao Carrinho
+                                {product.stock !== undefined && product.stock <= 0
+                                    ? "Fora de Stock"
+                                    : "Adicionar ao Carrinho"}
                             </button>
                         </div>
+                        {product.stock !== undefined && (
+                            <p className="text-sm text-gray-600 mt-2">
+                                Stock disponível: {product.stock} unidades
+                            </p>
+                        )}
 
                         {/* Detalhes Extra */}
                         <div className="mt-8 pt-8 border-t border-gray-200">

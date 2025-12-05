@@ -29,10 +29,22 @@ def create_order(order_data: OrderCreate, current_user=Depends(get_current_user)
                 )
             
             # Validar estoque
+            if product.stock is None or product.stock < 0:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail=f"Produto {product.name} tem stock inválido"
+                )
+            
             if product.stock < item.quantity:
                 raise HTTPException(
                     status_code=status.HTTP_400_BAD_REQUEST,
                     detail=f"Estoque insuficiente para {product.name}. Disponível: {product.stock}, Solicitado: {item.quantity}"
+                )
+            
+            if item.quantity <= 0:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail=f"Quantidade deve ser maior que zero para {product.name}"
                 )
             
             # Calcular subtotal

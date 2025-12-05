@@ -55,6 +55,14 @@ def create_product(
         files: Union[UploadFile, list[UploadFile]] = File(default=[]),
         admin=Depends(require_admin)
 ):
+    # Validar stock não negativo
+    if stock < 0:
+        raise HTTPException(status_code=400, detail="Stock não pode ser negativo")
+    
+    # Validar preço não negativo
+    if price < 0:
+        raise HTTPException(status_code=400, detail="Preço não pode ser negativo")
+    
     image_paths = []
 
     # Lógica de Upload Cloudinary
@@ -123,6 +131,14 @@ def update_product(
         files: Optional[List[UploadFile]] = File(default=None),
         admin=Depends(require_admin)
 ):
+    # Validar stock não negativo
+    if stock < 0:
+        raise HTTPException(status_code=400, detail="Stock não pode ser negativo")
+    
+    # Validar preço não negativo
+    if price < 0:
+        raise HTTPException(status_code=400, detail="Preço não pode ser negativo")
+    
     p = Product.objects(id=product_id).first()
     if not p:
         raise HTTPException(status_code=404, detail="Product not found")

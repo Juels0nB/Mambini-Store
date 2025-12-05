@@ -8,6 +8,7 @@ export interface CartItem {
     size: string;
     color?: string;
     quantity: number;
+    stock?: number; // Stock disponível do produto
 }
 
 interface CartContextType {
@@ -42,12 +43,21 @@ export function CartProvider({ children }: { children: ReactNode }) {
             );
 
             if (existingItem) {
+                const newQuantity = existingItem.quantity + newItem.quantity;
+                // Validar stock se disponível
+                if (newItem.stock !== undefined && newQuantity > newItem.stock) {
+                    throw new Error(`Stock insuficiente. Disponível: ${newItem.stock}`);
+                }
                 return prevCart.map((item) =>
                     item.id === newItem.id && item.size === newItem.size
-                        ? { ...item, quantity: item.quantity + newItem.quantity }
+                        ? { ...item, quantity: newQuantity, stock: newItem.stock }
                         : item
                 );
             } else {
+                // Validar stock se disponível
+                if (newItem.stock !== undefined && newItem.quantity > newItem.stock) {
+                    throw new Error(`Stock insuficiente. Disponível: ${newItem.stock}`);
+                }
                 return [...prevCart, newItem];
             }
         });
@@ -62,6 +72,10 @@ export function CartProvider({ children }: { children: ReactNode }) {
             prev.map((item) => {
                 if (item.id === id && item.size === size) {
                     const newQty = item.quantity + amount;
+                    // Validar stock se disponível
+                    if (newQty > 0 && item.stock !== undefined && newQty > item.stock) {
+                        throw new Error(`Stock insuficiente. Disponível: ${item.stock}`);
+                    }
                     return newQty > 0 ? { ...item, quantity: newQty } : item;
                 }
                 return item;

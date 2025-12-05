@@ -50,15 +50,33 @@ function CartPage() {
 
                                     <div className="flex items-center gap-3">
                                         <button
-                                            onClick={() => updateQuantity(item.id, item.size, -1)}
+                                            onClick={() => {
+                                                try {
+                                                    updateQuantity(item.id, item.size, -1);
+                                                } catch (error) {
+                                                    alert(error instanceof Error ? error.message : "Erro ao atualizar quantidade");
+                                                }
+                                            }}
                                             className="px-2 border rounded hover:bg-gray-100"
                                         >−</button>
                                         <span>{item.quantity}</span>
                                         <button
-                                            onClick={() => updateQuantity(item.id, item.size, 1)}
+                                            onClick={() => {
+                                                try {
+                                                    updateQuantity(item.id, item.size, 1);
+                                                } catch (error) {
+                                                    alert(error instanceof Error ? error.message : "Erro ao atualizar quantidade");
+                                                }
+                                            }}
                                             className="px-2 border rounded hover:bg-gray-100"
+                                            disabled={item.stock !== undefined && item.quantity >= item.stock}
                                         >+</button>
                                     </div>
+                                    {item.stock !== undefined && (
+                                        <p className="text-xs text-gray-500 mt-1">
+                                            Stock: {item.stock}
+                                        </p>
+                                    )}
 
                                     <button
                                         onClick={() => removeFromCart(item.id, item.size)}

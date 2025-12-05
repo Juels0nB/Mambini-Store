@@ -1,11 +1,11 @@
-from mongoengine import Document, StringField, FloatField, IntField, DateTimeField, ListField
+from mongoengine import Document, StringField, FloatField, IntField, DateTimeField, ListField, ValidationError
 import datetime
 
 class Product(Document):
     name = StringField(required=True, max_length=100)
     description = StringField()
     price = FloatField(required=True)
-    stock = IntField(default=0)
+    stock = IntField(default=0, min_value=0)
     created_at = DateTimeField(default=datetime.datetime.utcnow)
     sizes = ListField(StringField())
     available_sizes = ListField(StringField())
@@ -16,8 +16,13 @@ class Product(Document):
     images = ListField(StringField())
     
     def clean(self):
-        """Normaliza o campo created_at se for uma string ISO"""
+        """Normaliza o campo created_at se for uma string ISO e valida stock"""
         super().clean()
+        
+        # Validar stock não negativo
+        if self.stock is not None and self.stock < 0:
+            raise ValidationError("Stock não pode ser negativo")
+        
         if isinstance(self.created_at, str):
             try:
                 # Converte string ISO para datetime
