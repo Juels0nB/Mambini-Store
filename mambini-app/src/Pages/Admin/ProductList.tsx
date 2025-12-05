@@ -31,13 +31,28 @@ export default function ProductList() {
         }
     };
 
-    // Helper para imagem
-    const getThumb = (imgs: (string | File)[]) => {
-        if(!imgs || imgs.length === 0) return "/placeholder.png";
-        const img = imgs[0];
-        return typeof img === 'string'
-            ? (img.startsWith('http') ? img : `http://localhost:8000${img}`)
-            : URL.createObjectURL(img);
+    // Helper para imagem - usa visible_images se disponível
+    const getThumb = (product: Product) => {
+        // Usar visible_images se disponível, senão usar images
+        const imagesToUse = (product.visible_images && product.visible_images.length > 0) 
+            ? product.visible_images 
+            : product.images;
+        
+        if(!imagesToUse || imagesToUse.length === 0) return "/placeholder.png";
+        
+        const img = imagesToUse[0];
+        
+        if (typeof img === 'string') {
+            // URLs do Cloudinary já vêm completas (https://res.cloudinary.com/...)
+            if (img.startsWith('http://') || img.startsWith('https://')) {
+                return img;
+            }
+            // URL relativa - adicionar localhost
+            return `http://localhost:8000${img}`;
+        }
+        
+        // Se for File, criar URL temporária
+        return URL.createObjectURL(img);
     }
 
     useEffect(() => { loadProducts(); }, []);
@@ -66,7 +81,15 @@ export default function ProductList() {
                                 <td className="px-6 py-4 whitespace-nowrap">
                                     <div className="flex items-center">
                                         <div className="h-10 w-10 flex-shrink-0">
-                                            <img className="h-10 w-10 rounded-full object-cover border" src={getThumb(product.images)} alt="" />
+                                            <img 
+                                                className="h-10 w-10 rounded-full object-cover border" 
+                                                src={getThumb(product)} 
+                                                alt={product.name}
+                                                onError={(e) => {
+                                                    e.currentTarget.src = "/placeholder.png";
+                                                    e.currentTarget.onerror = null;
+                                                }}
+                                            />
                                         </div>
                                         <div className="ml-4">
                                             <div className="text-sm font-medium text-gray-900">{product.name}</div>

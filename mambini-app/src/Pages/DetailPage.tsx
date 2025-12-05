@@ -23,8 +23,12 @@ export default function DetailPage() {
                 // ✅ Usa a função centralizada do serviço
                 const data = await getProductById(id);
 
-                // Tratamento de imagens
-                const imageUrls = (data.images ?? []).map((img: string | File) => {
+                // Tratamento de imagens - usar visible_images se disponível
+                const imagesToUse = (data.visible_images && data.visible_images.length > 0) 
+                    ? data.visible_images 
+                    : data.images;
+                
+                const imageUrls = (imagesToUse ?? []).map((img: string | File) => {
                     if (typeof img !== 'string') return '';
                     return img.startsWith("http") ? img : `http://localhost:8000${img}`;
                 });
@@ -270,7 +274,7 @@ export default function DetailPage() {
                     </div>
                 </div>
             </main>
-            <Footer />
+            
         </div>
     );
 }

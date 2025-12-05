@@ -12,8 +12,13 @@ const ProductCard: FC<ProductCardProps> = ({ product }) => {
     const [imageUrl, setImageUrl] = useState("/placeholder.png");
 
     useEffect(() => {
-        if (product.images && product.images.length > 0) {
-            const img = product.images[0];
+        // Usar visible_images se disponível, senão usar images
+        const imagesToUse = (product.visible_images && product.visible_images.length > 0) 
+            ? product.visible_images 
+            : product.images;
+        
+        if (imagesToUse && imagesToUse.length > 0) {
+            const img = imagesToUse[0];
 
             if (typeof img === "string") {
                 if (img.startsWith("http")) {

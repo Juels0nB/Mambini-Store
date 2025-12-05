@@ -13,6 +13,7 @@ class ProductBase(BaseModel):
     colors: Optional[List[str]] = []
     available_colors: Optional[List[str]] = []
     images: Optional[List[str]] = []
+    visible_images: Optional[List[str]] = []
 
 class ProductOut(ProductBase):
     id: str

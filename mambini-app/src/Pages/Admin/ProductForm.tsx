@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { addProduct, editProduct, fetchProductById } from "../../services/productService";
 import { useParams, useNavigate } from "react-router-dom";
 import type { Product } from "../../api/productApi";
+import { deleteProductImage, updateVisibleImages } from "../../api/productApi";
 
 export default function ProductForm() {
     const { id } = useParams();
@@ -19,13 +20,26 @@ export default function ProductForm() {
         colors: [],
         available_colors: [],
         images: [],
+        visible_images: [],
     });
 
     const [loading, setLoading] = useState(false);
+    const [newImages, setNewImages] = useState<File[]>([]);
 
     useEffect(() => {
         if (id) {
-            fetchProductById(id).then((data) => setForm(data));
+            fetchProductById(id).then((data) => {
+                // Inicializar visible_images se não existir - usar todas as imagens como visíveis por padrão
+                const stringImages = data.images?.filter((img): img is string => typeof img === 'string') || [];
+                const visibleImages = data.visible_images && data.visible_images.length > 0 
+                    ? data.visible_images 
+                    : stringImages;
+                
+                setForm({ 
+                    ...data, 
+                    visible_images: visibleImages 
+                });
+            });
         }
     }, [id]);
 
@@ -39,12 +53,82 @@ export default function ProductForm() {
         setForm({ ...form, [name]: items });
     };
 
+    const handleDeleteImage = async (imageUrl: string) => {
+        if (!id) return;
+        if (!window.confirm("Tens a certeza que queres apagar esta imagem?")) return;
+        
+        try {
+            await deleteProductImage(id, imageUrl);
+            // Atualizar form removendo a imagem
+            const updatedImages = form.images.filter(img => img !== imageUrl);
+            const updatedVisible = (form.visible_images || []).filter(img => img !== imageUrl);
+            setForm({ ...form, images: updatedImages, visible_images: updatedVisible });
+            alert("Imagem apagada com sucesso!");
+        } catch (err) {
+            console.error(err);
+            alert("Erro ao apagar imagem.");
+        }
+    };
+
+    const handleToggleVisible = async (imageUrl: string) => {
+        if (!id) {
+            // Se não tem ID (criando novo produto), apenas atualizar localmente
+            const currentVisible = form.visible_images || [];
+            const isVisible = currentVisible.includes(imageUrl);
+            const newVisible = isVisible
+                ? currentVisible.filter(img => img !== imageUrl)
+                : [...currentVisible, imageUrl];
+            setForm({ ...form, visible_images: newVisible });
+            return;
+        }
+
+        const currentVisible = form.visible_images || [];
+        const isVisible = currentVisible.includes(imageUrl);
+        const newVisible = isVisible
+            ? currentVisible.filter(img => img !== imageUrl)
+            : [...currentVisible, imageUrl];
+        
+        // Atualizar localmente primeiro para feedback imediato
+        setForm({ ...form, visible_images: newVisible });
+        
+        // Atualizar no servidor
+        try {
+            const result = await updateVisibleImages(id, newVisible);
+            // Atualizar com os dados retornados do servidor para garantir sincronização
+            if (result && result.visible_images) {
+                setForm({ ...form, visible_images: result.visible_images });
+            }
+        } catch (err) {
+            console.error("Erro ao atualizar imagens visíveis:", err);
+            alert("Erro ao atualizar imagens visíveis. Tenta novamente.");
+            // Reverter em caso de erro
+            setForm({ ...form, visible_images: currentVisible });
+        }
+    };
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setLoading(true);
         try {
-            if (id) await editProduct(id, form);
-            else await addProduct(form);
+            if (id) {
+                // Editar produto existente
+                const formWithNewImages = {
+                    ...form,
+                    images: [...form.images, ...newImages]
+                };
+                await editProduct(id, formWithNewImages);
+                // Atualizar imagens visíveis se necessário
+                if (form.visible_images) {
+                    await updateVisibleImages(id, form.visible_images);
+                }
+            } else {
+                // Criar novo produto - novas imagens serão enviadas
+                await addProduct({
+                    ...form,
+                    images: newImages, // Apenas novas imagens para criação
+                    visible_images: [] // Será definido pelo backend
+                });
+            }
             window.location.href = "/admin"; // Força refresh para voltar à lista
         } catch (err) {
             console.error(err);
@@ -170,10 +254,84 @@ export default function ProductForm() {
                 {/* Imagens */}
                 <div className="border-t pt-6">
                     <label className="block text-sm font-medium text-gray-700 mb-2">Imagens do Produto</label>
+                    
+                    {/* Imagens Existentes */}
+                    {form.images && form.images.length > 0 && (
+                        <div className="mb-4">
+                            <p className="text-sm text-gray-600 mb-3">Imagens existentes:</p>
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                {form.images
+                                    .filter((img): img is string => typeof img === 'string')
+                                    .map((img, index) => {
+                                        // URLs do Cloudinary já vêm completas (https://res.cloudinary.com/...)
+                                        // Apenas adicionar localhost se for uma URL relativa
+                                        let imageUrl = img;
+                                        if (!img.startsWith('http://') && !img.startsWith('https://')) {
+                                            imageUrl = `http://localhost:8000${img}`;
+                                        }
+                                        
+                                        // Debug: log da URL
+                                        if (index === 0) {
+                                            console.log("Primeira imagem - Original:", img, "URL formatada:", imageUrl);
+                                        }
+                                        
+                                        // Comparar usando a string original do banco (img)
+                                        const isVisible = form.visible_images?.includes(img) || false;
+                                        
+                                        return (
+                                            <div key={index} className="relative group border-2 border-gray-200 rounded-lg overflow-hidden bg-white">
+                                                <img 
+                                                    src={imageUrl} 
+                                                    alt={`Imagem ${index + 1}`}
+                                                    className="w-full h-32 object-cover"
+                                                    onError={(e) => {
+                                                        console.error("Erro ao carregar imagem:", imageUrl, "Original:", img);
+                                                        e.currentTarget.src = "/placeholder.png";
+                                                        e.currentTarget.onerror = null; // Prevenir loop
+                                                    }}
+                                                    onLoad={() => {
+                                                        if (index === 0) {
+                                                            console.log("Imagem carregada com sucesso:", imageUrl);
+                                                        }
+                                                    }}
+                                                    loading="lazy"
+                                                />
+                                                {/* Overlay apenas no hover */}
+                                                <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-50 transition-all duration-200 flex items-center justify-center gap-2">
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => handleDeleteImage(img)}
+                                                        className="opacity-0 group-hover:opacity-100 bg-red-500 text-white px-3 py-1 rounded text-sm hover:bg-red-600 transition-opacity"
+                                                    >
+                                                        🗑️ Apagar
+                                                    </button>
+                                                </div>
+                                                {/* Checkbox de visibilidade */}
+                                                <div className="absolute top-2 left-2 z-10">
+                                                    <label className="flex items-center gap-2 bg-white px-2 py-1 rounded text-xs cursor-pointer shadow-sm">
+                                                        <input
+                                                            type="checkbox"
+                                                            checked={isVisible}
+                                                            onChange={() => handleToggleVisible(img)}
+                                                            className="cursor-pointer"
+                                                        />
+                                                        <span className={isVisible ? 'text-green-600 font-semibold' : 'text-gray-500'}>
+                                                            {isVisible ? 'Visível' : 'Oculta'}
+                                                        </span>
+                                                    </label>
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Upload de Novas Imagens */}
                     <div className="flex items-center justify-center w-full">
                         <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 transition">
                             <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                                <p className="mb-2 text-sm text-gray-500"><span className="font-semibold">Clique para fazer upload</span></p>
+                                <p className="mb-2 text-sm text-gray-500"><span className="font-semibold">Clique para adicionar novas imagens</span></p>
                                 <p className="text-xs text-gray-500">PNG, JPG or WEBP</p>
                             </div>
                             <input
@@ -182,15 +340,14 @@ export default function ProductForm() {
                                 className="hidden"
                                 onChange={(e) => {
                                     if (e.target.files) {
-                                        setForm({ ...form, images: Array.from(e.target.files) });
+                                        setNewImages(Array.from(e.target.files));
                                     }
                                 }}
                             />
                         </label>
                     </div>
-                    {/* Preview (Texto simples por agora) */}
-                    {form.images.length > 0 && (
-                        <p className="mt-2 text-sm text-green-600">{form.images.length} ficheiro(s) selecionado(s)</p>
+                    {newImages.length > 0 && (
+                        <p className="mt-2 text-sm text-green-600">{newImages.length} nova(s) imagem(ns) selecionada(s)</p>
                     )}
                 </div>
 

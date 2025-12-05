@@ -24,10 +24,15 @@ export default function HomePage() {
     }, []);
 
     // Helper para formatar a imagem corretamente
-    const getImageUrl = (images: (string | File)[]) => {
-        if (!images || images.length === 0) return "/placeholder.png";
+    const getImageUrl = (product: Product) => {
+        // Usar visible_images se disponível, senão usar images
+        const imagesToUse = (product.visible_images && product.visible_images.length > 0) 
+            ? product.visible_images 
+            : product.images;
+        
+        if (!imagesToUse || imagesToUse.length === 0) return "/placeholder.png";
 
-        const img = images[0];
+        const img = imagesToUse[0];
         if (typeof img === 'string') {
             return img.startsWith("http") ? img : `http://localhost:8000${img}`;
         }
@@ -93,7 +98,7 @@ export default function HomePage() {
                             >
                                 <div className="overflow-hidden">
                                     <img
-                                        src={getImageUrl(product.images as string[])}
+                                        src={getImageUrl(product)}
                                         alt={product.name}
                                         className="w-full h-64 object-cover group-hover:scale-105 transition duration-300"
                                     />
@@ -132,7 +137,7 @@ export default function HomePage() {
                             >
                                 <div className="overflow-hidden">
                                     <img
-                                        src={getImageUrl(product.images as string[])}
+                                        src={getImageUrl(product)}
                                         alt={product.name}
                                         className="w-full h-64 object-cover group-hover:scale-105 transition duration-300"
                                     />

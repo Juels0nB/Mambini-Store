@@ -13,6 +13,7 @@ export interface Product {
     colors: string[];
     available_colors: string[];
     images: (File | string)[];
+    visible_images?: string[];
     created_at?: string;
 }
 
@@ -85,4 +86,19 @@ export const updateProduct = async (id: string, data: Partial<Product>): Promise
 
 export const deleteProduct = async (id: string): Promise<void> => {
     await api.delete(`/products/${id}`);
+};
+
+/** Deletar uma imagem específica do produto */
+export const deleteProductImage = async (productId: string, imageUrl: string): Promise<any> => {
+    const encodedUrl = encodeURIComponent(imageUrl);
+    const res = await api.delete(`/products/${productId}/images/${encodedUrl}`);
+    return res.data;
+};
+
+/** Atualizar quais imagens são visíveis na loja */
+export const updateVisibleImages = async (productId: string, visibleImages: string[]): Promise<any> => {
+    const res = await api.put(`/products/${productId}/visible-images`, {
+        visible_images: visibleImages
+    });
+    return res.data;
 };

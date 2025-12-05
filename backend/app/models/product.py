@@ -13,7 +13,8 @@ class Product(Document):
     category = StringField()
     colors = ListField(StringField())
     available_colors = ListField(StringField())
-    images = ListField(StringField())
+    images = ListField(StringField())  # Todas as imagens do produto
+    visible_images = ListField(StringField())  # Imagens visíveis na loja
     
     def clean(self):
         """Normaliza o campo created_at se for uma string ISO e valida stock"""
