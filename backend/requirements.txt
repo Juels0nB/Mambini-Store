@@ -10,3 +10,4 @@ cloudinary
 python-dotenv #Carregar variáveis de ambiente do arquivo .env
 argon2-cffi
 dnspython
+stripe #Integração com Stripe para pagamentos

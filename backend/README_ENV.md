@@ -60,6 +60,17 @@ CLOUDINARY_API_KEY=sua-api-key
 CLOUDINARY_API_SECRET=seu-api-secret
 ```
 
+#### Stripe (Pagamentos)
+
+Obtenha as credenciais no [Dashboard do Stripe](https://dashboard.stripe.com):
+
+```
+STRIPE_SECRET_KEY=sk_test_...  # Chave secreta (sk_test_ para teste, sk_live_ para produção)
+STRIPE_WEBHOOK_SECRET=whsec_...  # Secret do webhook (obtido após configurar o webhook)
+```
+
+**Nota**: Veja o arquivo `STRIPE_SETUP.md` na raiz do projeto para instruções detalhadas de configuração do Stripe.
+
 #### CORS (Opcional)
 
 Para adicionar origens adicionais além das padrão (localhost:5173 e mambini-store.vercel.app):

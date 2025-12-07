@@ -39,6 +39,10 @@ class Order(Document):
     # Notas
     notes = StringField()
     
+    # Informações de pagamento Stripe
+    payment_intent_id = StringField()  # ID do PaymentIntent do Stripe
+    payment_status = StringField(default='pending')  # pending, succeeded, failed, cancelled
+    
     def save(self, *args, **kwargs):
         """Atualiza updated_at ao salvar"""
         self.updated_at = datetime.datetime.utcnow()

@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.routes import user, product, order
+from app.routes import user, product, order, payment
 import app.db  # Conexão DB
 import os
 
@@ -42,3 +42,4 @@ def read_root():
 app.include_router(user.router)
 app.include_router(product.router)
 app.include_router(order.router)
+app.include_router(payment.router)

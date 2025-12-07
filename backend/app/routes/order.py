@@ -5,8 +5,53 @@ from app.schemas.order import OrderCreate, OrderOut, OrderStatusUpdate
 from app.auth import get_current_user, require_admin
 from typing import List
 from mongoengine.errors import ValidationError
+import stripe
+import os
+
+# Garantir que dotenv seja carregado
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    pass
+
+# Configurar Stripe para verificar status do pagamento
+stripe.api_key = os.getenv("STRIPE_SECRET_KEY")
 
 router = APIRouter(prefix="/orders")
+
+def order_to_order_out(order: Order) -> OrderOut:
+    """Função auxiliar para converter Order em OrderOut"""
+    return OrderOut(
+        id=str(order.id),
+        user_id=order.user_id,
+        user_email=order.user_email,
+        user_name=order.user_name,
+        items=[
+            {
+                "product_id": item.product_id,
+                "product_name": item.product_name,
+                "price": item.price,
+                "quantity": item.quantity,
+                "size": item.size,
+                "color": item.color,
+                "image": item.image
+            }
+            for item in order.items
+        ],
+        total_amount=order.total_amount,
+        status=order.status,
+        shipping_address=order.shipping_address,
+        shipping_city=order.shipping_city,
+        shipping_postal_code=order.shipping_postal_code,
+        shipping_country=order.shipping_country,
+        shipping_phone=order.shipping_phone,
+        created_at=str(order.created_at),
+        updated_at=str(order.updated_at),
+        notes=order.notes,
+        payment_intent_id=order.payment_intent_id,
+        payment_status=order.payment_status
+    )
 
 @router.post("/", response_model=OrderOut, status_code=status.HTTP_201_CREATED)
 def create_order(order_data: OrderCreate, current_user=Depends(get_current_user)):
@@ -78,6 +123,24 @@ def create_order(order_data: OrderCreate, current_user=Depends(get_current_user)
             detail="Carrinho vazio"
         )
     
+    # Verificar status do pagamento se payment_intent_id foi fornecido
+    initial_status = "pending"
+    payment_status = "pending"
+    
+    if order_data.payment_intent_id and stripe.api_key:
+        try:
+            payment_intent = stripe.PaymentIntent.retrieve(order_data.payment_intent_id)
+            payment_status = payment_intent.status
+            
+            # Se o pagamento já foi confirmado, iniciar pedido como "processing"
+            if payment_intent.status == "succeeded":
+                initial_status = "processing"
+                payment_status = "succeeded"
+        except stripe.error.StripeError as e:
+            # Se houver erro ao verificar, manter como pending
+            # O webhook irá atualizar depois
+            print(f"Erro ao verificar status do pagamento: {e}")
+    
     # Criar pedido
     order = Order(
         user_id=str(current_user.id),
@@ -85,13 +148,15 @@ def create_order(order_data: OrderCreate, current_user=Depends(get_current_user)
         user_name=current_user.name,
         items=validated_items,
         total_amount=total_amount,
-        status="pending",
+        status=initial_status,  # "processing" se pagamento confirmado, "pending" caso contrário
         shipping_address=order_data.shipping.address,
         shipping_city=order_data.shipping.city,
         shipping_postal_code=order_data.shipping.postal_code,
         shipping_country=order_data.shipping.country,
         shipping_phone=order_data.shipping.phone,
-        notes=order_data.notes
+        notes=order_data.notes,
+        payment_intent_id=order_data.payment_intent_id,
+        payment_status=payment_status
     )
     
     try:
@@ -102,108 +167,21 @@ def create_order(order_data: OrderCreate, current_user=Depends(get_current_user)
             detail=f"Erro ao criar pedido: {str(e)}"
         )
     
-    return OrderOut(
-        id=str(order.id),
-        user_id=order.user_id,
-        user_email=order.user_email,
-        user_name=order.user_name,
-        items=[
-            {
-                "product_id": item.product_id,
-                "product_name": item.product_name,
-                "price": item.price,
-                "quantity": item.quantity,
-                "size": item.size,
-                "color": item.color,
-                "image": item.image
-            }
-            for item in order.items
-        ],
-        total_amount=order.total_amount,
-        status=order.status,
-        shipping_address=order.shipping_address,
-        shipping_city=order.shipping_city,
-        shipping_postal_code=order.shipping_postal_code,
-        shipping_country=order.shipping_country,
-        shipping_phone=order.shipping_phone,
-        created_at=str(order.created_at),
-        updated_at=str(order.updated_at),
-        notes=order.notes
-    )
+    return order_to_order_out(order)
 
 @router.get("/", response_model=List[OrderOut])
 def get_my_orders(current_user=Depends(get_current_user)):
     """Lista todos os pedidos do usuário logado"""
     orders = Order.objects(user_id=str(current_user.id)).order_by("-created_at")
     
-    return [
-        OrderOut(
-            id=str(order.id),
-            user_id=order.user_id,
-            user_email=order.user_email,
-            user_name=order.user_name,
-            items=[
-                {
-                    "product_id": item.product_id,
-                    "product_name": item.product_name,
-                    "price": item.price,
-                    "quantity": item.quantity,
-                    "size": item.size,
-                    "color": item.color,
-                    "image": item.image
-                }
-                for item in order.items
-            ],
-            total_amount=order.total_amount,
-            status=order.status,
-            shipping_address=order.shipping_address,
-            shipping_city=order.shipping_city,
-            shipping_postal_code=order.shipping_postal_code,
-            shipping_country=order.shipping_country,
-            shipping_phone=order.shipping_phone,
-            created_at=str(order.created_at),
-            updated_at=str(order.updated_at),
-            notes=order.notes
-        )
-        for order in orders
-    ]
+    return [order_to_order_out(order) for order in orders]
 
 @router.get("/all", response_model=List[OrderOut])
 def get_all_orders(admin=Depends(require_admin)):
     """Lista todos os pedidos (apenas admin)"""
     orders = Order.objects().order_by("-created_at")
     
-    return [
-        OrderOut(
-            id=str(order.id),
-            user_id=order.user_id,
-            user_email=order.user_email,
-            user_name=order.user_name,
-            items=[
-                {
-                    "product_id": item.product_id,
-                    "product_name": item.product_name,
-                    "price": item.price,
-                    "quantity": item.quantity,
-                    "size": item.size,
-                    "color": item.color,
-                    "image": item.image
-                }
-                for item in order.items
-            ],
-            total_amount=order.total_amount,
-            status=order.status,
-            shipping_address=order.shipping_address,
-            shipping_city=order.shipping_city,
-            shipping_postal_code=order.shipping_postal_code,
-            shipping_country=order.shipping_country,
-            shipping_phone=order.shipping_phone,
-            created_at=str(order.created_at),
-            updated_at=str(order.updated_at),
-            notes=order.notes
-        )
-        for order in orders
-    ]
+    return [order_to_order_out(order) for order in orders]
 
 @router.get("/{order_id}", response_model=OrderOut)
 def get_order(order_id: str, current_user=Depends(get_current_user)):
@@ -223,34 +201,7 @@ def get_order(order_id: str, current_user=Depends(get_current_user)):
             detail="Não tens permissão para ver este pedido"
         )
     
-    return OrderOut(
-        id=str(order.id),
-        user_id=order.user_id,
-        user_email=order.user_email,
-        user_name=order.user_name,
-        items=[
-            {
-                "product_id": item.product_id,
-                "product_name": item.product_name,
-                "price": item.price,
-                "quantity": item.quantity,
-                "size": item.size,
-                "color": item.color,
-                "image": item.image
-            }
-            for item in order.items
-        ],
-        total_amount=order.total_amount,
-        status=order.status,
-        shipping_address=order.shipping_address,
-        shipping_city=order.shipping_city,
-        shipping_postal_code=order.shipping_postal_code,
-        shipping_country=order.shipping_country,
-        shipping_phone=order.shipping_phone,
-        created_at=str(order.created_at),
-        updated_at=str(order.updated_at),
-        notes=order.notes
-    )
+    return order_to_order_out(order)
 
 @router.put("/{order_id}/status", response_model=OrderOut)
 def update_order_status(
@@ -277,32 +228,5 @@ def update_order_status(
     order.status = status_update.status
     order.save()
     
-    return OrderOut(
-        id=str(order.id),
-        user_id=order.user_id,
-        user_email=order.user_email,
-        user_name=order.user_name,
-        items=[
-            {
-                "product_id": item.product_id,
-                "product_name": item.product_name,
-                "price": item.price,
-                "quantity": item.quantity,
-                "size": item.size,
-                "color": item.color,
-                "image": item.image
-            }
-            for item in order.items
-        ],
-        total_amount=order.total_amount,
-        status=order.status,
-        shipping_address=order.shipping_address,
-        shipping_city=order.shipping_city,
-        shipping_postal_code=order.shipping_postal_code,
-        shipping_country=order.shipping_country,
-        shipping_phone=order.shipping_phone,
-        created_at=str(order.created_at),
-        updated_at=str(order.updated_at),
-        notes=order.notes
-    )
+    return order_to_order_out(order)
 

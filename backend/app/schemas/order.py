@@ -25,6 +25,7 @@ class OrderCreate(BaseModel):
     items: List[OrderItemBase]
     shipping: ShippingInfo
     notes: Optional[str] = None
+    payment_intent_id: Optional[str] = None  # ID do PaymentIntent do Stripe
 
 class OrderOut(BaseModel):
     id: str
@@ -42,6 +43,8 @@ class OrderOut(BaseModel):
     created_at: str
     updated_at: str
     notes: Optional[str] = None
+    payment_intent_id: Optional[str] = None
+    payment_status: Optional[str] = None
 
     class Config:
         from_attributes = True

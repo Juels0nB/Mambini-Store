@@ -34,12 +34,15 @@ export interface Order {
     created_at: string;
     updated_at: string;
     notes?: string;
+    payment_intent_id?: string;
+    payment_status?: string;
 }
 
 export interface CreateOrderRequest {
     items: OrderItem[];
     shipping: ShippingInfo;
     notes?: string;
+    payment_intent_id?: string;
 }
 
 export const createOrder = async (data: CreateOrderRequest): Promise<Order> => {
