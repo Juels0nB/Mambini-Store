@@ -41,7 +41,6 @@ function Footer() {
                 </div>
             </div>
 
-            {/* Linha final (direitos autorais) */}
             <div className="mt-10 items-align-start pt-4 text-center text-gray-500 text-sm">
                 © {new Date().getFullYear()} MambiniStore. All rights reserved.
             </div>
