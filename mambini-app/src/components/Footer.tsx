@@ -33,7 +33,7 @@ function Footer() {
                     </ul>
                 </div>
 
-                {/* Stay Updated */}
+                {/* Stay Updatedee */}
                 <div>
                     <h1 className="font-semibold text-lg mb-2">Contact Us</h1>
                     <p className="text-gray-400 mb-2">suporte@mambinistore.com</p>
