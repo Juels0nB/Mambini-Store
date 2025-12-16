@@ -17,12 +17,18 @@ except ImportError:
     pass
 
 # Configurar Stripe
-stripe.api_key = os.getenv("STRIPE_SECRET_KEY")
+# Não falhar na importação - verificar nas rotas quando necessário
+STRIPE_SECRET_KEY = os.getenv("STRIPE_SECRET_KEY")
+if STRIPE_SECRET_KEY:
+    stripe.api_key = STRIPE_SECRET_KEY
 
-if not stripe.api_key:
-    raise ValueError(
-        "STRIPE_SECRET_KEY não configurada. Configure a variável de ambiente STRIPE_SECRET_KEY no arquivo .env"
-    )
+def check_stripe_configured():
+    """Verifica se o Stripe está configurado, lança HTTPException se não estiver"""
+    if not STRIPE_SECRET_KEY:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Serviço de pagamento não configurado. STRIPE_SECRET_KEY não está definida."
+        )
 
 router = APIRouter(prefix="/payment")
 
@@ -44,6 +50,7 @@ def create_payment_intent(
     Cria um PaymentIntent no Stripe para iniciar o processo de pagamento.
     O cliente vai usar o client_secret para confirmar o pagamento no frontend.
     """
+    check_stripe_configured()
     try:
         # Converter para centavos (Stripe trabalha com a menor unidade da moeda)
         amount_cents = int(payment_data.amount * 100)
@@ -91,6 +98,7 @@ async def stripe_webhook(request: Request, stripe_signature: str = Header(None))
     Webhook do Stripe para receber eventos de pagamento.
     Atualiza o status do pedido quando o pagamento é confirmado.
     """
+    check_stripe_configured()
     webhook_secret = os.getenv("STRIPE_WEBHOOK_SECRET")
     
     if not webhook_secret:
@@ -155,6 +163,7 @@ def get_payment_intent_status(payment_intent_id: str, current_user: User = Depen
     """
     Verifica o status de um PaymentIntent específico.
     """
+    check_stripe_configured()
     try:
         intent = stripe.PaymentIntent.retrieve(payment_intent_id)
         
