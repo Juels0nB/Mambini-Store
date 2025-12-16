@@ -5,7 +5,6 @@ from app.schemas.order import OrderCreate, OrderOut, OrderStatusUpdate
 from app.auth import get_current_user, require_admin
 from typing import List
 from mongoengine.errors import ValidationError
-import stripe
 import os
 
 # Garantir que dotenv seja carregado
@@ -15,8 +14,17 @@ try:
 except ImportError:
     pass
 
-# Configurar Stripe para verificar status do pagamento
-stripe.api_key = os.getenv("STRIPE_SECRET_KEY")
+# Importar Stripe opcionalmente
+try:
+    import stripe
+    STRIPE_AVAILABLE = True
+    STRIPE_SECRET_KEY = os.getenv("STRIPE_SECRET_KEY")
+    if STRIPE_SECRET_KEY:
+        stripe.api_key = STRIPE_SECRET_KEY
+except ImportError:
+    STRIPE_AVAILABLE = False
+    stripe = None
+    STRIPE_SECRET_KEY = None
 
 router = APIRouter(prefix="/orders")
 
@@ -127,7 +135,7 @@ def create_order(order_data: OrderCreate, current_user=Depends(get_current_user)
     initial_status = "pending"
     payment_status = "pending"
     
-    if order_data.payment_intent_id and stripe.api_key:
+    if order_data.payment_intent_id and STRIPE_AVAILABLE and STRIPE_SECRET_KEY:
         try:
             payment_intent = stripe.PaymentIntent.retrieve(order_data.payment_intent_id)
             payment_status = payment_intent.status

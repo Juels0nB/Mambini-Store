@@ -2,6 +2,10 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useCart } from "../context/CartContext";
 import { createOrder, type ShippingInfo } from "../api/orderApi";
+import { createPaymentIntent } from "../api/paymentApi";
+import PaymentForm from "../components/PaymentForm";
+import { Elements } from "@stripe/react-stripe-js";
+import { stripePromise } from "../config/stripe";
 
 export default function CheckoutPage() {
     const { cart, total, clearCart } = useCart();
@@ -15,8 +19,12 @@ export default function CheckoutPage() {
         phone: "",
     });
     const [notes, setNotes] = useState("");
+    const [clientSecret, setClientSecret] = useState<string | null>(null);
+    const [paymentIntentId, setPaymentIntentId] = useState<string | null>(null);
+    const [showPayment, setShowPayment] = useState(false);
+    const [paymentError, setPaymentError] = useState<string | null>(null);
 
-    const handleSubmit = async (e: React.FormEvent) => {
+    const handleShippingSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         
         if (cart.length === 0) {
@@ -24,7 +32,39 @@ export default function CheckoutPage() {
             return;
         }
 
+        // Validar campos obrigatórios
+        if (!shipping.address || !shipping.city || !shipping.postal_code || !shipping.country) {
+            alert("Por favor, preenche todos os campos obrigatórios de entrega.");
+            return;
+        }
+
         setLoading(true);
+        setPaymentError(null);
+
+        try {
+            // Criar PaymentIntent antes de mostrar o formulário de pagamento
+            const paymentResponse = await createPaymentIntent({
+                amount: total,
+                currency: "eur",
+            });
+
+            setClientSecret(paymentResponse.client_secret);
+            setPaymentIntentId(paymentResponse.payment_intent_id);
+            setShowPayment(true);
+        } catch (error: any) {
+            console.error("Erro ao criar pagamento:", error);
+            setPaymentError(
+                error.response?.data?.detail || 
+                "Erro ao iniciar pagamento. Tenta novamente."
+            );
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handlePaymentSuccess = async (paymentIntentId: string) => {
+        setLoading(true);
+        setPaymentError(null);
 
         try {
             // Converter itens do carrinho para formato da API
@@ -38,30 +78,119 @@ export default function CheckoutPage() {
                 image: item.image,
             }));
 
+            // Criar pedido com o payment_intent_id
             const order = await createOrder({
                 items: orderItems,
                 shipping,
                 notes: notes || undefined,
+                payment_intent_id: paymentIntentId,
             });
 
             // Limpar carrinho após sucesso
             clearCart();
 
-            // Redirecionar para página de sucesso ou histórico
+            // Redirecionar para página de sucesso
             navigate(`/orders/${order.id}`, { 
                 state: { message: "Pedido criado com sucesso!" } 
             });
         } catch (error: any) {
             console.error("Erro ao criar pedido:", error);
-            alert(
+            setPaymentError(
                 error.response?.data?.detail || 
-                "Erro ao finalizar compra. Tenta novamente."
+                "Erro ao finalizar pedido. Tenta novamente."
             );
-        } finally {
             setLoading(false);
         }
     };
 
+    const handlePaymentError = (error: string) => {
+        setPaymentError(error);
+        setLoading(false);
+    };
+
+    // Se já temos o client_secret, mostrar o formulário de pagamento
+    if (showPayment && clientSecret) {
+        return (
+            <div className="min-h-screen bg-gray-50 py-12">
+                <div className="max-w-4xl mx-auto px-4">
+                    <h1 className="text-3xl font-bold mb-8">Pagamento</h1>
+
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                        {/* Formulário de Pagamento */}
+                        <div className="lg:col-span-2">
+                            <div className="bg-white p-6 rounded-lg shadow">
+                                <h2 className="text-xl font-semibold mb-4">Informações de Pagamento</h2>
+                                
+                                {paymentError && (
+                                    <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded text-red-700">
+                                        {paymentError}
+                                    </div>
+                                )}
+
+                                <Elements 
+                                    stripe={stripePromise} 
+                                    options={{ clientSecret }}
+                                >
+                                    <PaymentForm
+                                        clientSecret={clientSecret}
+                                        onSuccess={handlePaymentSuccess}
+                                        onError={handlePaymentError}
+                                        isLoading={loading}
+                                    />
+                                </Elements>
+
+                                <button
+                                    onClick={() => {
+                                        setShowPayment(false);
+                                        setClientSecret(null);
+                                        setPaymentIntentId(null);
+                                        setPaymentError(null);
+                                    }}
+                                    className="mt-4 text-gray-600 hover:text-gray-800"
+                                >
+                                    ← Voltar para informações de entrega
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* Resumo do Pedido */}
+                        <div className="lg:col-span-1">
+                            <div className="bg-white p-6 rounded-lg shadow sticky top-4">
+                                <h2 className="text-xl font-semibold mb-4">Resumo do Pedido</h2>
+
+                                <div className="space-y-2 mb-4">
+                                    {cart.map((item) => (
+                                        <div key={`${item.id}-${item.size}`} className="flex justify-between text-sm">
+                                            <span>
+                                                {item.name} x{item.quantity}
+                                            </span>
+                                            <span>€{(item.price * item.quantity).toFixed(2)}</span>
+                                        </div>
+                                    ))}
+                                </div>
+
+                                <div className="border-t pt-4 mt-4">
+                                    <div className="flex justify-between font-bold text-lg">
+                                        <span>Total:</span>
+                                        <span>€{total.toFixed(2)}</span>
+                                    </div>
+                                </div>
+
+                                <div className="mt-4 p-3 bg-gray-50 rounded text-sm">
+                                    <p className="font-medium mb-2">Entrega:</p>
+                                    <p>{shipping.address}</p>
+                                    <p>{shipping.postal_code} {shipping.city}</p>
+                                    <p>{shipping.country}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+    // Formulário de entrega (passo inicial)
     return (
         <div className="min-h-screen bg-gray-50 py-12">
             <div className="max-w-4xl mx-auto px-4">
@@ -70,8 +199,14 @@ export default function CheckoutPage() {
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                     {/* Formulário de Entrega */}
                     <div className="lg:col-span-2">
-                        <form onSubmit={handleSubmit} className="bg-white p-6 rounded-lg shadow">
+                        <form onSubmit={handleShippingSubmit} className="bg-white p-6 rounded-lg shadow">
                             <h2 className="text-xl font-semibold mb-4">Informações de Entrega</h2>
+
+                            {paymentError && (
+                                <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded text-red-700">
+                                    {paymentError}
+                                </div>
+                            )}
 
                             <div className="space-y-4">
                                 <div>
@@ -198,11 +333,11 @@ export default function CheckoutPage() {
                             </div>
 
                             <button
-                                onClick={handleSubmit}
+                                onClick={handleShippingSubmit}
                                 disabled={loading || cart.length === 0}
                                 className="w-full mt-6 py-3 bg-black text-white rounded font-medium hover:bg-gray-800 transition disabled:opacity-50 disabled:cursor-not-allowed"
                             >
-                                {loading ? "A processar..." : "Confirmar Pedido"}
+                                {loading ? "A processar..." : "Continuar para Pagamento"}
                             </button>
 
                             <button
@@ -218,4 +353,3 @@ export default function CheckoutPage() {
         </div>
     );
 }
-

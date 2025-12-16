@@ -1,5 +1,7 @@
  import "./App.css";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
+import { Elements } from "@stripe/react-stripe-js";
+import { stripePromise } from "./config/stripe";
 import NavBar from "./components/NavBar.tsx";
 import Footer from "./components/Footer.tsx";
 import HomePage from "./Pages/HomePage.tsx";
@@ -22,8 +24,9 @@ import { CartProvider } from "./context/CartContext";
 
 function App() {
     return (
-        <CartProvider>
-            <Router>
+        <Elements stripe={stripePromise}>
+            <CartProvider>
+                <Router>
             <div className="flex flex-col bg-gray-100 min-h-screen">
                 <NavBar />
                 <main className="pt-10 flex-grow">
@@ -56,6 +59,7 @@ function App() {
             </div>
         </Router>
      </CartProvider>
+        </Elements>
     );
 }
 

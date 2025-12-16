@@ -2,7 +2,6 @@ from fastapi import APIRouter, Depends, HTTPException, status, Header
 from starlette.requests import Request
 from pydantic import BaseModel
 from typing import Optional
-import stripe
 import os
 from app.auth import get_current_user
 from app.models.order import Order
@@ -16,14 +15,25 @@ try:
 except ImportError:
     pass
 
-# Configurar Stripe
-# Não falhar na importação - verificar nas rotas quando necessário
-STRIPE_SECRET_KEY = os.getenv("STRIPE_SECRET_KEY")
-if STRIPE_SECRET_KEY:
-    stripe.api_key = STRIPE_SECRET_KEY
+# Importar Stripe opcionalmente
+try:
+    import stripe
+    STRIPE_AVAILABLE = True
+    STRIPE_SECRET_KEY = os.getenv("STRIPE_SECRET_KEY")
+    if STRIPE_SECRET_KEY:
+        stripe.api_key = STRIPE_SECRET_KEY
+except ImportError:
+    STRIPE_AVAILABLE = False
+    stripe = None
+    STRIPE_SECRET_KEY = None
 
 def check_stripe_configured():
     """Verifica se o Stripe está configurado, lança HTTPException se não estiver"""
+    if not STRIPE_AVAILABLE:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Serviço de pagamento não disponível. Módulo 'stripe' não está instalado."
+        )
     if not STRIPE_SECRET_KEY:
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
