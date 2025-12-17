@@ -7,6 +7,48 @@ import PaymentForm from "../components/PaymentForm";
 import { Elements } from "@stripe/react-stripe-js";
 import { stripePromise } from "../config/stripe";
 
+const steps = [
+    { id: 1, label: "Entrega" },
+    { id: 2, label: "Pagamento" },
+    { id: 3, label: "Confirmação" },
+];
+
+function StepIndicator({ currentStep }: { currentStep: 1 | 2 }) {
+    // currentStep: 1 = Entrega, 2 = Pagamento (Confirmação acontece após sucesso)
+    return (
+        <ol className="flex items-center gap-4 text-sm mb-6" aria-label="Progresso da encomenda">
+            {steps.map((step, index) => {
+                const isActive = step.id === currentStep;
+                const isCompleted = step.id < currentStep;
+                const isFuture = step.id > currentStep;
+
+                const baseClasses =
+                    "flex items-center gap-2 rounded-full px-3 py-1 border";
+
+                const stateClasses = isCompleted
+                    ? "bg-green-100 border-green-300 text-green-800"
+                    : isActive
+                    ? "bg-black text-white border-black"
+                    : "bg-gray-100 border-gray-300 text-gray-500";
+
+                return (
+                    <li key={step.id} className="flex items-center gap-2">
+                        <span className={`${baseClasses} ${stateClasses}`}>
+                            <span className="font-semibold">
+                                {step.id}.
+                            </span>
+                            <span>{step.label}</span>
+                        </span>
+                        {index < steps.length - 1 && (
+                            <span className="h-px w-6 bg-gray-300" aria-hidden="true" />
+                        )}
+                    </li>
+                );
+            })}
+        </ol>
+    );
+}
+
 export default function CheckoutPage() {
     const { cart, total, clearCart } = useCart();
     const navigate = useNavigate();
@@ -113,7 +155,8 @@ export default function CheckoutPage() {
         return (
             <div className="min-h-screen bg-gray-50 py-12">
                 <div className="max-w-4xl mx-auto px-4">
-                    <h1 className="text-3xl font-bold mb-8">Pagamento</h1>
+                    <h1 className="text-3xl font-bold mb-2">Pagamento</h1>
+                    <StepIndicator currentStep={2} />
 
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                         {/* Formulário de Pagamento */}
@@ -122,8 +165,14 @@ export default function CheckoutPage() {
                                 <h2 className="text-xl font-semibold mb-4">Informações de Pagamento</h2>
                                 
                                 {paymentError && (
-                                    <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded text-red-700">
-                                        {paymentError}
+                                    <div
+                                        className="mb-4 p-4 bg-red-50 border border-red-200 rounded text-red-700 text-sm"
+                                        role="alert"
+                                    >
+                                        <p className="font-semibold mb-1">
+                                            Ocorreu um problema ao processar o pagamento.
+                                        </p>
+                                        <p>{paymentError}</p>
                                     </div>
                                 )}
 
@@ -194,7 +243,8 @@ export default function CheckoutPage() {
     return (
         <div className="min-h-screen bg-gray-50 py-12">
             <div className="max-w-4xl mx-auto px-4">
-                <h1 className="text-3xl font-bold mb-8">Finalizar Compra</h1>
+                <h1 className="text-3xl font-bold mb-2">Finalizar Compra</h1>
+                <StepIndicator currentStep={1} />
 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                     {/* Formulário de Entrega */}
@@ -203,8 +253,14 @@ export default function CheckoutPage() {
                             <h2 className="text-xl font-semibold mb-4">Informações de Entrega</h2>
 
                             {paymentError && (
-                                <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded text-red-700">
-                                    {paymentError}
+                                <div
+                                    className="mb-4 p-4 bg-red-50 border border-red-200 rounded text-red-700 text-sm"
+                                    role="alert"
+                                >
+                                    <p className="font-semibold mb-1">
+                                        Não foi possível iniciar o pagamento.
+                                    </p>
+                                    <p>{paymentError}</p>
                                 </div>
                             )}
 
