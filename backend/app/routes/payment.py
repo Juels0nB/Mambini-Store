@@ -37,7 +37,8 @@ def check_stripe_configured():
     if not STRIPE_SECRET_KEY:
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail="Serviço de pagamento não configurado. STRIPE_SECRET_KEY não está definida."
+            detail="Serviço de pagamento não configurado. STRIPE_SECRET_KEY não está definida. "
+                   "Configure a variável de ambiente STRIPE_SECRET_KEY no painel do Vercel (Settings > Environment Variables)."
         )
 
 router = APIRouter(prefix="/payment")
