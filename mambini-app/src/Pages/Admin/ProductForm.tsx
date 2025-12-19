@@ -279,7 +279,7 @@ export default function ProductForm() {
                                         const isVisible = form.visible_images?.includes(img) || false;
                                         
                                         return (
-                                            <div key={index} className="relative group border-2 border-gray-200 rounded-lg overflow-hidden bg-white">
+                                            <div key={index} className="relative group border-2 border-gray-200 rounded-lg overflow-hidden">
                                                 <img 
                                                     src={imageUrl} 
                                                     alt={`Imagem ${index + 1}`}
@@ -297,11 +297,11 @@ export default function ProductForm() {
                                                     loading="lazy"
                                                 />
                                                 {/* Overlay apenas no hover */}
-                                                <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-50 transition-all duration-200 flex items-center justify-center gap-2">
+                                                <div className="absolute inset-0 hidden group-hover:flex items-center justify-center bg-black bg-opacity-50 transition-opacity duration-200">
                                                     <button
                                                         type="button"
                                                         onClick={() => handleDeleteImage(img)}
-                                                        className="opacity-0 group-hover:opacity-100 bg-red-500 text-white px-3 py-1 rounded text-sm hover:bg-red-600 transition-opacity"
+                                                        className="bg-red-500 text-white px-3 py-1 rounded text-sm hover:bg-red-600 transition-colors"
                                                     >
                                                         🗑️ Apagar
                                                     </button>
