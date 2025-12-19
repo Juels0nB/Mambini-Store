@@ -9,6 +9,13 @@ class User(Document):
     name = StringField(max_length=100)
     password = StringField(required=True)
     role = StringField(choices=ROLE_CHOICES, default='client')
+    
+    # Informações de endereço para entrega
+    address = StringField()
+    city = StringField()
+    postal_code = StringField()
+    country = StringField()
+    phone = StringField()
 
     def set_password(self, raw_password: str):
         self.password = pwd_context.hash(raw_password)

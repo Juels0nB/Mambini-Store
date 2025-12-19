@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useCart } from "../context/CartContext";
 import { createOrder, type ShippingInfo } from "../api/orderApi";
 import { createPaymentIntent } from "../api/paymentApi";
+import { getProfile } from "../api/userApi";
 import PaymentForm from "../components/PaymentForm";
 import { Elements } from "@stripe/react-stripe-js";
 import { stripePromise } from "../config/stripe";
@@ -65,6 +66,29 @@ export default function CheckoutPage() {
     const [paymentIntentId, setPaymentIntentId] = useState<string | null>(null);
     const [showPayment, setShowPayment] = useState(false);
     const [paymentError, setPaymentError] = useState<string | null>(null);
+
+    // Carregar dados do utilizador para preencher automaticamente os campos de entrega
+    useEffect(() => {
+        const token = localStorage.getItem("token");
+        if (token) {
+            getProfile()
+                .then((user) => {
+                    if (user) {
+                        setShipping({
+                            address: user.address || "",
+                            city: user.city || "",
+                            postal_code: user.postal_code || "",
+                            country: user.country || "Portugal",
+                            phone: user.phone || "",
+                        });
+                    }
+                })
+                .catch(() => {
+                    // Se não conseguir carregar o perfil, não faz nada
+                    // O utilizador pode não estar logado ou pode preencher manualmente
+                });
+        }
+    }, []);
 
     const handleShippingSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
