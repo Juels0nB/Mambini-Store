@@ -5,6 +5,7 @@ from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from app.models.user import User
 
+#teste
 # CORREÇÃO: Lê a chave da variável de ambiente
 SECRET_KEY = os.getenv("SECRET_KEY", "YOUR_SECRET_KEY")
 ALGORITHM = "HS256"
